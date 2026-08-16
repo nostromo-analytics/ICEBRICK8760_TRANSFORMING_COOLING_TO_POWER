@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="icebrick-weather-real.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" crossorigin="anonymous"></script>
@@ -310,6 +311,11 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 @keyframes nbredThrob{ 0%,100%{ stroke-width:6; } 50%{ stroke-width:19; } }
 .nbredpulse{ animation:nbredThrob .5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce){ .nbflow,.nbflowS,.nbbeamDash,.nbbeamWedge,.nbredpulse{ animation:none; } }
+
+/* Power-envelope roads */
+.peroad{border:1.5px solid rgba(128,148,168,0.35);border-radius:10px;padding:14px 16px;transition:border-color .2s}
+.peroad.pe-on{border-color:#3b82f6;box-shadow:0 0 0 1px rgba(59,130,246,0.25)}
+.pehead{font-size:11.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -347,7 +353,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
     <!-- Q1 — location -->
     <div class="qstep on" data-q="0">
-      <div class="qnum">Question 1 of 8</div>
+      <div class="qnum">Question 1 of 7</div>
       <div class="qtitle">Where does your data center live?</div>
       <p class="qhelp">Aside from compute, weather is the single biggest driver of cooling cost. Click the hub closest to your site —
         we will synthesize 50 years of hourly dry-bulb and wet-bulb from that location's climate normals.</p>
@@ -361,28 +367,49 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
     <!-- Q2 — size -->
     <div class="qstep" data-q="1">
-      <div class="qnum">Question 2 of 8</div>
-      <div class="qtitle">How much IT are you cooling?</div>
-      <p class="qhelp">Your critical IT nameplate. Everything downstream — chiller tonnage, water, grid connection —
-        scales off this number, so a rough figure is fine to start.</p>
+      <div class="qnum">Question 2 of 7</div>
+      <div class="qtitle">Name Your Power Envelope</div>
+      <p class="qhelp">Every project starts from one of two numbers — the substation connection you were offered,
+        or the IT nameplate you want to install. Type yours into its box, set the two sliders every path needs,
+        and continue from that box: the other quantity is derived for you at the design day.</p>
       <div class="slrow">
         <div class="sl">
-          <label>IT nameplate <span class="val" id="v_it">100 MW</span></label>
-          <input type="range" id="i_it" min="1" max="200" step="1" value="100">
-          <div class="hint">Anything from a 1 MW edge room to a 200 MW campus.</div>
+          <label>Operational ceiling — usable share of the connection <span class="val" id="v_pp1">80%</span></label>
+          <input type="range" id="i_pp1" min="70" max="90" step="1" value="80">
+          <div class="hint">How much of the connection operations may actually use at the worst hour.</div>
         </div>
         <div class="sl">
-          <label>Heat captured to the water loop <span class="val" id="v_hc">100%</span></label>
-          <input type="range" id="i_hc" min="60" max="100" step="1" value="100">
-          <div class="hint">Direct-to-chip / liquid-cooled racks typically land at 85–95%. The remainder is
-            picked up by room air and is not modelled as loop heat.</div>
+          <label>Ancillary (non-cooling) <span class="val" id="v_oh">10%</span></label>
+          <input type="range" id="i_oh" min="3" max="20" step="0.5" value="10">
+          <div class="hint">UPS losses, distribution, white-space fans, lighting, security, offices. A modern site
+            with efficient UPS lands near 8–10%; older estates run 12–16%.</div>
+        </div>
+      </div>
+      <div class="slrow" style="margin-top:8px">
+        <div class="sl peroad" id="pe_grid_road">
+          <div class="pehead" style="text-transform:none">The input MW is your connection (substation) size</div>
+          <label>Your number <span class="val" id="v_pe_gc">— MW</span></label>
+          <input type="text" id="i_pe_gc" class="txtin" inputmode="decimal" spellcheck="false" autocomplete="off"
+            placeholder="e.g. 60" style="width:100%;font-family:var(--mono);font-size:14px;padding:9px 12px;margin-bottom:8px">
+          <div class="hint" id="pe_avail" style="min-height:56px">Type a number above and this column reads it as
+            your substation connection.</div>
+          <button class="btn pri" id="pe_go_gc" style="margin-top:10px;width:100%">Continue as connection size →</button>
+        </div>
+        <div class="sl peroad" id="pe_it_road">
+          <div class="pehead" style="text-transform:none">The input MW is your IT Nameplate</div>
+          <label>Your number <span class="val" id="v_pe_it">— MW</span></label>
+          <input type="text" id="i_pe_it" class="txtin" inputmode="decimal" spellcheck="false" autocomplete="off"
+            placeholder="e.g. 36" style="width:100%;font-family:var(--mono);font-size:14px;padding:9px 12px;margin-bottom:8px">
+          <div class="hint" id="pe_feed" style="min-height:56px">Type a number above and this column reads it as
+            your IT nameplate.</div>
+          <button class="btn pri" id="pe_go_it" style="margin-top:10px;width:100%">Continue as IT nameplate →</button>
         </div>
       </div>
     </div>
 
     <!-- Q3 — cascade -->
     <div class="qstep" data-q="2">
-      <div class="qnum">Question 3 of 8</div>
+      <div class="qnum">Question 3 of 7</div>
       <div class="qtitle">How do you reject that heat today?</div>
       <p class="qhelp">Pick the cooling cascade that matches your plant. This decides how much of the year is free,
         how much runs on water, and how much lands on a compressor.</p>
@@ -391,7 +418,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
     <!-- Q4 — temperatures -->
     <div class="qstep" data-q="3">
-      <div class="qnum">Question 4 of 8</div>
+      <div class="qnum">Question 4 of 7</div>
       <div class="qtitle">Is your data hall air-cooled or liquid-cooled?</div>
       <p class="qhelp">This decides what the next question even means. A liquid hall has a CDU between your facility
         loop and the chips, and the temperature that matters is the one the cold plates are promised. An air hall has
@@ -402,7 +429,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
     <!-- Q5 — temperatures -->
     <div class="qstep" data-q="4">
-      <div class="qnum">Question 5 of 8</div>
+      <div class="qnum">Question 5 of 7</div>
       <div class="qtitle" id="q5title">What water do your racks actually get?</div>
       <p class="qhelp" id="q5help">Your IT does not see facility water &mdash; it sees whatever comes out of the CDU, one heat
         exchanger later. So we ask for the number your racks are promised and the step the CDU adds — the SLA ceiling
@@ -519,7 +546,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
     <!-- Q6 — go higher, with the IceBrick tie-in playing -->
     <div class="qstep" data-q="5">
-      <div class="qnum">Question 6 of 8</div>
+      <div class="qnum">Question 6 of 7</div>
       <div class="qtitle">Go higher</div>
       <p class="qhelp">The same loop with <b>IceBrick tied in at the CDU</b>. Watch the same spike again: the DCIM sees it
         the moment it starts, IceBrick is dispatched, and the cold wave reaches the CDU HX ahead of the heat — the hall
@@ -541,18 +568,14 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     </div>
 
     <!-- Q7 — overhead -->
+    <!-- Q6 — confirm -->
     <div class="qstep" data-q="6">
-      <div class="qnum">Question 7 of 8</div>
-      <div class="qtitle">What else draws power besides IT and cooling?</div>
-      <p class="qhelp">UPS losses, distribution, circulation pumps, white space fans, lighting, security, offices.
-        This is the floor under your PUE that no cooling strategy can touch — worth getting roughly right so the
-        rest of the numbers are honest.</p>
-      <div class="slrow">
-        <div class="sl">
-          <label>Ancillary (non-cooling) <span class="val" id="v_oh">10%</span></label>
-          <input type="range" id="i_oh" min="3" max="20" step="0.5" value="10">
-          <div class="hint">A modern site with efficient UPS lands near 8–10%. Older estates run 12–16%.</div>
-        </div>
+      <div class="qnum">Question 7 of 7</div>
+      <div class="qtitle">One last look before we run the year</div>
+      <p class="qhelp">This is the baseline operating matrix we will simulate. Change anything you like — you can also
+        come back and re-run with different answers at any time.</p>
+      <div class="panel" id="recapbox" style="margin-bottom:18px"></div>
+      <div class="slrow" style="margin-bottom:18px">
         <div class="sl">
           <label>Chiller modelled <span class="val" id="v_chl">YVFA0309</span></label>
           <div style="font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--water);padding:7px 0 2px">
@@ -563,15 +586,6 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
             the datasheet's 62 °F leaving water to your FWS through the lift. No rule-of-thumb kW/ton anywhere.</div>
         </div>
       </div>
-    </div>
-
-    <!-- Q6 — confirm -->
-    <div class="qstep" data-q="7">
-      <div class="qnum">Question 8 of 8</div>
-      <div class="qtitle">One last look before we run the year</div>
-      <p class="qhelp">This is the baseline operating matrix we will simulate. Change anything you like — you can also
-        come back and re-run with different answers at any time.</p>
-      <div class="panel" id="recapbox" style="margin-bottom:18px"></div>
       <div class="optgrid g2">
         <div class="opt big sel" id="go_run">
           <span class="on1">Run my 8,760-hour analysis →</span>
@@ -692,6 +706,13 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
   <div class="act" id="act2">
     <div class="acthead"><span class="actnum">Act 2</span>
       <h2 class="sec">What you need to know first: PUE and PEAK-PUE</h2></div>
+    <div class="hero" id="pe_itavail" style="display:none;margin-bottom:14px">
+      <div class="kpi" style="padding:22px 26px">
+        <div class="k-label" style="text-transform:none">Available capacity for IT under design-day conditions</div>
+        <div class="k-num" id="k_itav" style="font-size:2.2em">—</div>
+        <div class="k-sub" id="k_itav_s"></div>
+      </div>
+    </div>
     <div class="hero h4">
       <div class="kpi"><div class="k-label">Annual average PUE</div>
         <div class="k-num" id="k_pue">—</div><div class="k-sub" id="k_pue_s"></div></div>
@@ -765,7 +786,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="kpi savings"><div class="k-label">Peak facility demand</div>
           <div class="k-num"><span class="a" id="n_mw_a">—</span> <span class="arrow">→</span> <span class="b" id="n_mw_b">—</span></div>
           <div class="k-sub" id="n_mw_s"></div></div>
-        <div class="kpi savings"><div class="k-label">Unlocked IT capacity · same grid connection</div>
+        <div class="kpi savings"><div class="k-label" style="text-transform:none">Unlocked IT capacity · same grid connection</div>
           <div class="k-num" id="n_unlock">—</div><div class="k-sub" id="n_unlock_s"></div></div>
       </div>
       <div class="deltab">
@@ -890,6 +911,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="panel">
           <div class="chead"><div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">What it adds up to</h3>
             <div class="ctag">annual, at your operating matrix</div></div></div>
+          <div id="pe_res" style="margin-top:8px;padding:10px 12px;border:1.5px solid #3b82f6;border-radius:8px;font-size:13px;line-height:1.55;display:none"></div>
           <div id="sumlist" style="margin-top:6px"></div>
         </div>
       </div>
@@ -1074,12 +1096,67 @@ function genYear(h,y,keep){
   if(keep)out.hrs=hrs;
   return out;
 }
+// ============================================================================
+//  REAL WEATHER, WHEN THE PACK IS PRESENT. icebrick-weather-real.js (built from
+//  Open-Meteo ERA5 by the fetcher tool) defines window.WX_REAL: per hub, the full
+//  measured calendar-2025 hourly year and the hottest observed day of each year
+//  1976-2025. When a hub exists in the pack, typicalYear() serves the measured
+//  2025 and designN() serves the real hottest-day-of-the-last-N-years, dated.
+//  Hubs missing from the pack - and the whole tool when the file is absent -
+//  fall back to the synthetic generator below, unchanged.
+// ============================================================================
+const WXR=(typeof window!=='undefined'&&window.WX_REAL&&window.WX_REAL.hubs)?window.WX_REAL:null;
+function wxrUnpack(b64){
+  const bin=atob(b64), u=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  const v=new Int16Array(u.buffer), a=new Array(v.length);
+  for(let i=0;i<v.length;i++)a[i]=v[i]/10;
+  return a;
+}
+const wxrC={};
+function wxrHas(key){ return !!(WXR&&WXR.hubs&&WXR.hubs[key]); }
+function wxrYear(key){
+  const ck='y:'+key; if(wxrC[ck])return wxrC[ck];
+  const h=WXR.hubs[key]; if(!h)return null;
+  const T=wxrUnpack(h.T), Td=wxrUnpack(h.Td);
+  if(T.length!==8760)return null;
+  const hrs=[]; let peak=-99, peakIdx=0;
+  for(let i=0;i<8760;i++){
+    const t=T[i], WB=wetBulb(t,RHfromTd(t,Td[i]));
+    hrs.push({T:t,WB:WB,m:mOf(i),hh:i%24});
+    if(t>peak){peak=t;peakIdx=i;}
+  }
+  const d0=peakIdx-(peakIdx%24), pm=hrs[peakIdx].m;
+  const out={peak:peak,peakHour:hrs[peakIdx],peakIdx:peakIdx,idx:0,
+    designDay:hrs.slice(d0,d0+24),dayExt:hrs.slice(Math.max(0,d0-5),d0+24),
+    m:pm,day:Math.floor((d0-MSTART[pm])/24)+1,hrs:hrs,yearCal:2025,real:true};
+  return wxrC[ck]=out;
+}
+function wxrDesign(key,N){
+  const ck='d:'+key+':'+N; if(wxrC[ck])return wxrC[ck];
+  const h=WXR.hubs[key]; if(!h||!h.days||!h.days.length)return null;
+  const yTo=(WXR.meta&&WXR.meta.yearsTo)||2025, y0=yTo-N+1;
+  let best=null;
+  for(const d of h.days) if(d.y>=y0&&(!best||d.peak>best.peak)) best=d;
+  if(!best)return null;
+  const mo=+best.date.slice(5,7)-1, dayN=+best.date.slice(8,10);
+  const off=(best.T.length>=72?24:0);
+  const block=best.T.map((t,i)=>({T:t,WB:wetBulb(t,RHfromTd(t,best.Td[i])),m:mo,hh:i%24}));
+  const designDay=block.slice(off,off+24);
+  const dayExt=block.slice(Math.max(0,off-5),off+24);
+  let pk=-99,pkH=designDay[0]; designDay.forEach(o=>{if(o.T>pk){pk=o.T;pkH=o;}});
+  let wbPk=-99; designDay.forEach(o=>{if(o.WB>wbPk)wbPk=o.WB;});
+  return wxrC[ck]={peak:pk,peakHour:pkH,peakIdx:off+12,designDay:designDay,dayExt:dayExt,
+    m:mo,day:dayN,N:N,wbPeak:wbPk,yearCal:best.y,winFrom:y0,winTo:yTo,
+    dateStr:MONTHS[mo]+' '+dayN+', '+best.y,real:true};
+}
 function record(key){                              // 50 seeded years, metadata only
   const ck='rec:'+key; if(WX[ck])return WX[ck];
   const out=[]; for(let y=0;y<NMAX;y++) out.push(genYear(HUBS[key],y,false));
   return WX[ck]=out;
 }
 function typicalYear(key){                         // median-peak year of the LAST 20 — the "normal" year
+  if(WXR&&wxrHas(key)){const r=wxrYear(key); if(r)return r;}
   const ck='typ:'+key; if(WX[ck])return WX[ck];
   const rec=record(key);
   const idx=[...rec.slice(NMAX-20)].sort((a,b)=>a.peak-b.peak)[10].idx;
@@ -1088,6 +1165,7 @@ function typicalYear(key){                         // median-peak year of the LA
   return WX[ck]=out;
 }
 function designN(key,N){         // hottest day in the most recent N years of record
+  if(WXR&&wxrHas(key)){const r=wxrDesign(key,N); if(r)return r;}
   const ck='dn:'+key+':'+N; if(WX[ck])return WX[ck];
   const rec=record(key), y0=NMAX-N;                // N1 -> last year only
   let best=rec[y0];
@@ -1227,7 +1305,7 @@ function copAt(o,FWS,p,x,hd){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='81';                                           // build — stamped on the masthead and inside every run code
+const VER='91';                                           // build — stamped on the masthead and inside every run code
 const DES_BAND=3;                                         // K — how close to the day's hottest hour still counts as a sizing hour                                    // kWth of chiller installed per kW of IT
 let PLANT_TH=0;                                           // kWth installed \u2014 set once per run
 function plantTh(p,N){ return p.IT_kW>1e-9?PLANT_RATIO*p.IT_kW:0; }
@@ -1265,7 +1343,7 @@ function waterLitres(o,FWS,p,fChillOverride){
 
 // ---------- UI state ----------
 const S={units:'metric',theme:'light'};
-const W={hub:'nova',IT:100,hc:1.0,chS:23,chE:10,cascade:1,hall:'liquid',RS:30,RSmax:35,FWS:26,FWShi:26,cduap:4,oh:0.10,N:20,mult:1,hdr:0};
+const W={hub:'nova',IT:100,hc:1.0,chS:23,chE:10,cascade:1,hall:'liquid',RS:30,RSmax:35,FWS:26,FWShi:26,cduap:4,oh:0.10,N:20,mult:1,hdr:0,gc:0,pePct:80,peMode:'it'};
 function P(){return {IT_kW:W.IT*1000, hc:W.hc, FWS:W.FWS, FWShi:Math.max(W.FWShi,W.FWS),
   cduap:W.cduap, cascade:W.cascade, oh:W.oh, hdr:W.hdr||0};}
 // TWO WORLDS, ONE PLANT. The "before" case runs at the supply temperature the site holds today.
@@ -2017,7 +2095,7 @@ $('units').addEventListener('click',e=>{
 // ============================================================================
 //  WIZARD
 // ============================================================================
-let STEP=0; const NSTEP=8;
+let STEP=0; const NSTEP=7;
 
 (function buildHubs(){
   // -- interactive US map -------------------------------------------------
@@ -2230,8 +2308,8 @@ function paintScheme(){
 }
 
 function syncWizLabels(){
-  $('v_it').textContent=W.IT+' MW';
-  $('v_hc').textContent=Math.round(W.hc*100)+'%';
+  {const e=$('v_it'); if(e)e.textContent=W.IT+' MW';}
+  {const e=$('v_hc'); if(e)e.textContent=Math.round(W.hc*100)+'%';}
   syncRack();
   $('v_rs').textContent=tA1(W.RS);
   const hi=rsHi(), up=hi-W.RS;
@@ -2277,12 +2355,57 @@ function syncWizLabels(){
   paintScheme();
 }
 const bind=(id,lbl,fn)=>{const el=$(id);el.addEventListener('input',()=>{fn(parseFloat(el.value));syncWizLabels();recap();});};
-bind('i_it','v_it',v=>W.IT=v);
-bind('i_hc','v_hc',v=>W.hc=v/100);
 bind('i_rs','v_rs',v=>{W.RS=v; if(W.RSmax<v)W.RSmax=v; syncRack();});
 bind('i_rsmax','v_rsmax',v=>{W.RSmax=Math.max(v,W.RS); syncRack();});
 bind('i_cdu','v_cdu',v=>{W.cduap=v; syncRack();});
 bind('i_hdr','v_hdr',v=>{W.hdr=v;});
+
+// ---------------------------------------------------------------- power envelope
+// ONE NUMBER, TWO READINGS. The field can mean a substation connection or an IT nameplate;
+// each column prices the other reading live, at the N-year DESIGN-DAY peak - the hour the
+// feed must actually survive - using a reference-size design-day run cached per config.
+function peK(){
+  const key=[W.hub,W.cascade,W.hall,W.hc,W.FWS,W.oh,W.hdr,W.N].join('|');
+  if(peK._k&&peK._key===key)return peK._k;
+  const p={IT_kW:20000,hc:W.hc,FWS:W.FWS,FWShi:Math.max(W.FWShi,W.FWS),cduap:W.cduap,cascade:W.cascade,oh:W.oh,hdr:W.hdr||0};
+  const keep=PLANT_TH; let k=1.35;
+  try{PLANT_TH=plantTh(p,W.N); k=runDesignDay(p,W.N).pkMW/20;}catch(e){}
+  PLANT_TH=keep; peK._k=k; peK._key=key; return k;
+}
+let PEg=0, PEi=0;
+function pePaint(){
+  const k=peK(), e1=$('pe_avail'), e2=$('pe_feed');
+  if(e1) e1.innerHTML=PEg>0
+    ? 'A <b>'+PEg+' MW</b> connection \u00d7 '+W.pePct+'% ceiling = '+(PEg*W.pePct/100).toFixed(1)+' MW usable \u2192 '+
+      '<b>\u2248 '+(PEg*(W.pePct/100)/k).toFixed(1)+' MW of IT</b> fits at the N'+W.N+' design day, before IceBrick.'
+    : 'Type your connection size above and the IT it can carry appears here.';
+  if(e2) e2.innerHTML=PEi>0
+    ? '<b>'+PEi+' MW</b> of IT peaks at \u2248 '+(k*PEi).toFixed(1)+' MW on the N'+W.N+' design day \u2192 needs a '+
+      '<b>\u2248 '+(k*PEi/(W.pePct/100)).toFixed(1)+' MW</b> connection at '+W.pePct+'% usable, before IceBrick.'
+    : 'Type your IT nameplate above and the connection it needs appears here.';
+  const q1=$('v_pp1'); if(q1)q1.textContent=W.pePct+'%';
+  const vg=$('v_pe_gc'); if(vg)vg.textContent=PEg>0?(PEg+' MW'):'\u2014 MW';
+  const vi=$('v_pe_it'); if(vi)vi.textContent=PEi>0?(PEi+' MW'):'\u2014 MW';
+  const g=$('pe_grid_road'), t=$('pe_it_road');
+  if(g&&t){ g.classList.toggle('pe-on',W.peMode==='grid'); t.classList.toggle('pe-on',W.peMode!=='grid'); }
+}
+let peT=null; const peSoon=()=>{clearTimeout(peT); peT=setTimeout(pePaint,350);};
+$('i_pe_gc').addEventListener('input',()=>{ PEg=parseFloat($('i_pe_gc').value)||0; W.peMode='grid'; peSoon(); });
+$('i_pe_it').addEventListener('input',()=>{ PEi=parseFloat($('i_pe_it').value)||0; W.peMode='it'; peSoon(); });
+$('i_pp1').addEventListener('input',()=>{ W.pePct=parseInt($('i_pp1').value); peSoon(); });
+$('i_oh').addEventListener('input',peSoon);
+$('pe_go_gc').addEventListener('click',()=>{
+  if(!(PEg>0)){ $('i_pe_gc').focus(); return; }
+  W.peMode='grid'; W.gc=PEg;
+  W.IT=Math.max(1,Math.min(1000,Math.round(PEg*(W.pePct/100)/peK()*10)/10));
+  pePaint(); syncWizLabels(); recap(); goStep(STEP+1);
+});
+$('pe_go_it').addEventListener('click',()=>{
+  if(!(PEi>0)){ $('i_pe_it').focus(); return; }
+  W.peMode='it'; W.gc=0;
+  W.IT=Math.max(1,Math.min(1000,PEi));
+  pePaint(); syncWizLabels(); recap(); goStep(STEP+1);
+});
 // The store-size slider only touches the storage pass — the baseline year is unchanged, so there is no
 // need to re-run it. The size-versus-peak curve is unchanged too: it is a property of the site, not of
 // the IceBrick array you picked off it, so it is computed once per site and only the marker moves.
@@ -2313,6 +2436,12 @@ function recap(){
   if($('recapbox'))$('recapbox').innerHTML=[
     ['Location',`${h.name} — ${h.sub}`,h.clim],
     ['IT nameplate',`${W.IT} MW`,`${Math.round(W.hc*100)}% of it captured to the water loop = ${rtStr(W.IT*1000*W.hc)} of loop heat`],
+    ['Power envelope',(W.peMode==='grid'&&W.gc>0)
+      ? `${W.gc} MW grid \u00d7 ${W.pePct}% ceiling = ${(W.gc*W.pePct/100).toFixed(1)} MW usable`
+      : `${W.pePct}% usable share of the substation feed`,
+      (W.peMode==='grid'&&W.gc>0)
+        ? 'Top to Bottom \u2014 the IT nameplate was derived from the grid connection'
+        : 'Bottom to Top \u2014 the substation feed is derived from the IT nameplate'],
     ['Cooling cascade',c.name,c.short],
     ['Data hall',HALLS[W.hall].name,HALLS[W.hall].short],
     [W.hall==='air'?'Chilled water to the hall':'Supply to the racks',tA1(W.RS),
@@ -2349,8 +2478,9 @@ function goStep(n){
   document.querySelectorAll('.qstep').forEach(q=>q.classList.toggle('on',+q.dataset.q===STEP));
   const wi=$('wizintro'); if(wi)wi.style.display=(STEP===0?'':'none');
   dots();
+  if(STEP===1&&typeof pePaint==='function')setTimeout(pePaint,30);
   $('w_prev').disabled=(STEP===0);
-  $('w_next').style.visibility=(STEP===NSTEP-1?'hidden':'visible');
+  $('w_next').style.visibility=((STEP===NSTEP-1||STEP===1)?'hidden':'visible');
   $('w_next').textContent=(STEP===NSTEP-2?'Review my answers →':'Next →');
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2418,7 +2548,7 @@ $('go_run').addEventListener('click',runAnalysis);
 //  because two builds can price the same inputs slightly differently.
 function parseRunCode(t){
   t=String(t||'').replace(/[\u2010-\u2015\u2212]/g,'-').toUpperCase();
-  const m=t.match(/IB8760-(\d+)-([A-Z]{3,4})-IT([\d.]+)-HC(\d+)-C([123])-(AIR|LIQ)-RS([\d.]+)-SLA([\d.]+)-AP([\d.]+)-FWS([\d.]+)-HI([\d.]+)-OH(\d+)(?:-HD([\d.]+))?(?:-CS(\d+))?(?:-DS(\d+))?-N(\d+)-MU([\d.]+)/);
+  const m=t.match(/IB8760-(\d+)-([A-Z]{3,4})-IT([\d.]+)-HC(\d+)-C([123])-(AIR|LIQ)-RS([\d.]+)-SLA([\d.]+)-AP([\d.]+)-FWS([\d.]+)-HI([\d.]+)-OH(\d+)(?:-HD([\d.]+))?(?:-CS(\d+))?(?:-DS(\d+))?-N(\d+)-MU([\d.]+)(?:-GC([\d.]+))?(?:-PP(\d+))?/);
   if(!m) return {err:'That does not read as an IceBrick simulation ID — it should start with IB8760- and carry all its fields.'};
   const hub=m[2].toLowerCase();
   if(!HUBS[hub]) return {err:'Unknown site code "'+m[2]+'" — this build knows '+Object.keys(HUBS).map(k=>k.toUpperCase()).join(', ')+'.'};
@@ -2426,7 +2556,7 @@ function parseRunCode(t){
   // and parseFloat shrugs that off where +'1.25.' turns the whole run into NaN
   const F=x=>parseFloat(x);
   const o={ver:m[1], hub, IT:F(m[3]), hc:F(m[4])/100, cascade:+m[5], hall:m[6]==='AIR'?'air':'liquid',
-           RS:F(m[7]), RSmax:F(m[8]), cduap:F(m[9]), FWS:F(m[10]), FWShi:F(m[11]), oh:F(m[12])/100, hdr:m[13]!=null?F(m[13]):0, chS:m[14]!=null?Math.round(F(m[14]))%24:23, chE:m[15]!=null?Math.round(F(m[15])):10, N:F(m[16]), mult:F(m[17])};
+           RS:F(m[7]), RSmax:F(m[8]), cduap:F(m[9]), FWS:F(m[10]), FWShi:F(m[11]), oh:F(m[12])/100, hdr:m[13]!=null?F(m[13]):0, chS:m[14]!=null?Math.round(F(m[14]))%24:23, chE:m[15]!=null?Math.round(F(m[15])):10, N:F(m[16]), mult:F(m[17]), gc:m[18]!=null?F(m[18]):0, pePct:m[19]!=null?F(m[19]):80};
   if(!(o.IT>=1&&o.IT<=1000)) return {err:'IT nameplate '+o.IT+' MW is outside the 1–1000 MW range.'};
   if(!(o.N>=1&&o.N<=50))     return {err:'Design return period N'+o.N+' is outside 1–50.'};
   if(!(o.mult>=1&&o.mult<=4))return {err:'Storage-nights multiplier '+o.mult+' is outside 1–4.'};
@@ -2441,6 +2571,10 @@ function runFromCode(){
   if(W.hall!==o.hall){W.hall=o.hall;}
   W.cduap=o.hall==='air'?0:o.cduap; W.RS=o.RS; W.RSmax=o.RSmax;
   W.oh=o.oh; W.hdr=o.hdr||0; W.chS=o.chS; W.chE=o.chE; W.N=o.N; W.mult=o.mult;
+  W.gc=o.gc||0; W.pePct=o.pePct||80; W.peMode=(o.gc>0?'grid':'it');
+  if($('i_pp1'))$('i_pp1').value=String(W.pePct);
+  if($('i_pe_gc')&&typeof PEg!=='undefined'&&W.gc>0){ PEg=W.gc; $('i_pe_gc').value=String(PEg); }
+  if($('i_pe_it')&&typeof PEi!=='undefined'){ PEi=o.IT; $('i_pe_it').value=String(PEi); }
   applyHall(); syncRack(); syncWizLabels(); recap();
   // the loop temperatures are derived, not stored - if the pasted FWS/HI disagree with RS/SLA/approach,
   // the code was edited by hand, and the derived numbers are the ones the engine can actually honour
@@ -2577,7 +2711,8 @@ function drawYear(){
   buildLegend($('y_legend'),chYear,items);
   applyRight();
   const f=fmtInt;
-  $('y_tag').textContent=`${HUBS[W.hub].name} · ${CASCADES[W.cascade].name} · FWS ${tA1(W.FWS)} · typical year`;
+  $('y_tag').textContent=`${HUBS[W.hub].name} · ${CASCADES[W.cascade].name} · FWS ${tA1(W.FWS)} · `+
+    (wxrHas(W.hub)?'calendar 2025 · measured (ERA5)':'typical year · synthetic normals');
   $('y_tot').innerHTML=`<b>Annual:</b> IT ${f(b.itE)} MWh · ancillary ${f(b.ancE)} MWh · CDU pumps ${f(b.cduE)} MWh · `+
     `primary pumps ${f(b.priE)} MWh`+
     (W.cascade===3?` · cooling towers ${f(b.eTwr)} MWh`:'')+
@@ -2608,9 +2743,22 @@ $('b2_reset').addEventListener('click',resetBoth);
 // ---------------------------------------------------------------- act 2 KPIs
 function paintBaseline(){
   const b=R.base, wu=wueFmt(b.WUE);
+  // CONNECTION-SIZE RUNS LEAD WITH THE ANSWER. When the envelope came from the grid road,
+  // the first number the results owe the visitor is how much IT that envelope carries -
+  // priced on this run's actual design day, not the wizard's reference estimate.
+  {const pa=$('pe_itavail');
+   if(pa){ if(W.peMode==='grid'&&W.gc>0&&R.dd){
+       const itMW=R.p.IT_kW/1000, E=W.gc*W.pePct/100, itAv=E/(R.dd.pkMW/itMW);
+       pa.style.display='';
+       $('k_itav').textContent=itAv.toFixed(1)+' MW';
+       $('k_itav_s').textContent=W.gc.toFixed(1)+' MW connection \u00d7 '+Math.round(W.pePct)+'% ceiling = '+E.toFixed(1)+
+         ' MW usable \u00b7 at the N'+W.N+' design day, before IceBrick \u2014 the next level below shows what IceBrick adds';
+     } else pa.style.display='none'; }}
   $('res_eyebrow').textContent=`${HUBS[W.hub].name} \u00b7 ${W.IT} MW IT \u00b7 ${CASCADES[W.cascade].name} \u00b7 FWS ${tA1(W.FWS)}`+
     (R.p.FWShi-W.FWS>=0.01?` (guaranteed ${tA1(R.p.FWShi)} with IceBrick)`:'')+` \u00b7 chiller ${CHILLER.model}`;
-  $('res_intro').innerHTML=`We built a typical meteorological year for <b>${HUBS[W.hub].name}</b> — <b>${R.base.yrCal}</b>, the median-peak year of the last two decades of a 50-year synthetic record — `+
+  $('res_intro').innerHTML=(wxrHas(W.hub)
+    ? `We ran the measured hourly weather of <b>calendar ${R.base.yrCal}</b> for <b>${HUBS[W.hub].name}</b> — ERA5 reanalysis, every one of its 8,760 hours as they actually happened — `
+    : `We built a typical meteorological year for <b>${HUBS[W.hub].name}</b> — <b>${R.base.yrCal}</b>, the median-peak year of the last two decades of a 50-year synthetic record — `)+
     `then pushed <b>${rtStr(R.p.IT_kW*R.p.hc)}</b> of loop heat through your ${CASCADES[W.cascade].name.toLowerCase()} cascade for all 8,760 hours of it, `+
     `and solved the compressor lift separately for every one of them. Every one of those compressor hours is priced off a single real machine — `+
     `the <b>${CHILLER.model}</b> (${CHILLER.tons.toFixed(1)} ton.R, ${CHILLER.kWdes} kW, EER ${CHILLER.eer}, IPLV.IP ${CHILLER.iplv}, ${CHILLER.ref}), `+
@@ -2839,6 +2987,16 @@ function paintCV(){
     `Hold the curve lightly: the planner has perfect foresight of the year, and ice is held without standing loss.`;
 }
 
+function peCalc(){
+  const IT=R.p.IT_kW/1000;
+  const kB=R.dd.pkMW/IT;
+  const kA=(R.ddi&&R.ddi.pkI)?R.ddi.pkI:R.st.pkMW/IT;
+  const grid=(W.peMode==='grid'&&W.gc>0);
+  const E=grid?W.gc*W.pePct/100:R.dd.pkMW;
+  const feed=grid?W.gc:R.dd.pkMW/(W.pePct/100);
+  const itB=grid?E/kB:IT, itA=E/kA;
+  return {grid,E,feed,itB,itA,extra:Math.max(0,itA-itB)};
+}
 function paintIce(){
   const b=R.base, st=R.st, di=R.ddi;
   const dPue=b.pue-st.pue, dPk=b.pkPue-st.pkPue, dMW=b.pkFac-st.pkMW;
@@ -3009,6 +3167,14 @@ function paintRetire(di,st){
         `this cascade sprays water to survive`
       : `this run's schedule leaves the evaporative duty where it was — ${fmtInt(wConv(b.water))} ${wUnit()}/yr before and after`;
   } else { $('d_h2o_w').style.display='none'; }
+  const pe=peCalc();
+  const peEl=$('pe_res'); if(peEl){ peEl.style.display='';
+    peEl.innerHTML='<b>Power envelope:</b> '+(pe.grid
+      ? W.gc.toFixed(1)+' MW grid \u00d7 '+Math.round(W.pePct)+'% ceiling = '+pe.E.toFixed(1)+' MW usable'
+      : pe.feed.toFixed(1)+' MW substation feed \u00b7 '+Math.round(W.pePct)+'% usable')+
+      '. At the N'+W.N+' design day it carries \u2248'+pe.itB.toFixed(1)+' MW of IT before IceBrick; with IceBrick \u2248'+pe.itA.toFixed(1)+
+      ' MW \u2014 <b style="color:#3b82f6">+'+pe.extra.toFixed(1)+' MW of IT (+'+(pe.itB>0?(100*pe.extra/pe.itB).toFixed(1):'0')+'%) inside the same envelope</b>, '+
+      'from the same feed, with no new grid application.'; }
   $('sumlist').innerHTML=[
     ['Facility water supply',tA1(R.p.FWS)+(R.p.FWShi-R.p.FWS>=0.01
         ? ' \u2192 '+tA1(R.p.FWShi)+' \u2014 zero deviation, Spike Shield SLA' : ' (unchanged)')],
@@ -3033,6 +3199,11 @@ function paintRetire(di,st){
     ['Peak headroom released',dMW.toFixed(2)+' MW at the meter'],
     ['\u2014 usable as new IT (\u00f7 peak PUE '+st.pkPue.toFixed(3)+')','+'+unlock.toFixed(2)+' MW'],
     ['\u2014 its own ancillary + cooling',oh.toFixed(2)+' MW'],
+    ['Power envelope',pe.grid
+      ? W.gc.toFixed(1)+' MW grid \u00d7 '+Math.round(W.pePct)+'% = '+pe.E.toFixed(1)+' MW usable'
+      : pe.feed.toFixed(1)+' MW feed \u00b7 '+Math.round(W.pePct)+'% usable = '+pe.E.toFixed(1)+' MW'],
+    ['\u2014 IT it carries, before \u2192 with IceBrick','\u2248'+pe.itB.toFixed(1)+' \u2192 \u2248'+pe.itA.toFixed(1)+
+      ' MW \u00b7 +'+pe.extra.toFixed(1)+' MW (+'+(pe.itB>0?(100*pe.extra/pe.itB).toFixed(1):'0')+'%)'],
     ['Chiller modelled throughout',CHILLER.model],
     ['Heat dome recirculation',W.hdr>0?'+'+tD1(W.hdr)+' above 90 \u00b0F \u00b7 avoided chillers only':'none modelled'],
     ['Chiller plant installed',PLANT_RATIO.toFixed(1)+' kWth per kW IT \u00b7 '+
@@ -3614,7 +3785,7 @@ async function buildPDF(){
     fws:tA1(W.FWS), fwshi:tA1(Math.max(W.FWShi,W.FWS)),
     fwsUp:Math.max(W.FWShi,W.FWS)-W.FWS,
     cdu:tD1(W.cduap), oh:Math.round(W.oh*1000)/10+'%',
-    casc:(CASCADES[W.cascade]&&CASCADES[W.cascade].name)||pTxt('v_hc'),
+    casc:(CASCADES[W.cascade]&&CASCADES[W.cascade].name)||'',
     chl:pTxt('v_chl'),
     eyebrow:pTxt('res_eyebrow'), intro:pTxt('res_intro'),
     yTag:pTxt('y_tag'), yTot:pTxt('y_tot'),
@@ -3952,6 +4123,10 @@ async function buildPDF(){
   para('Weather. Eight thousand seven hundred and sixty hours are synthesised from the monthly climate normals of '+
        'the selected hub — dry bulb and wet bulb, with a diurnal swing and a day-to-day persistence term. Fifty '+
        'such years are generated; the design day is drawn from the return-period statistics of that record, and the '+
+       (wxrHas(W.hub)?'annual figures use MEASURED weather: the full hourly calendar year 2025 (ERA5 reanalysis, '+
+        'Open-Meteo archive), and the N-year design day is the hottest day actually observed in the most recent N '+
+        'years of the 1976-2025 record, with its real date. The synthetic description below applies only to hubs '+
+        'without measured data. ':'')+
        'typical year used for the annual figures is the median-peak year of the most recent twenty.');
   para('Cascade. Each hour is walked through the selected cooling cascade stage by stage. Every stage sheds part of '+
        'the available temperature difference, and what is left is what the compressor has to lift. Circulation '+
@@ -3970,6 +4145,14 @@ async function buildPDF(){
        'floor — the highest hour the Storage is not permitted to help, which is normally an hour inside the charge '+
        'window. That is why the flat daytime plateau on the side-by-side chart can read slightly below the quoted '+
        'peak: the plateau is the ceiling, the quoted number is the worse of the two.');
+  if(R.st){ const pe=peCalc();
+    para('Power envelope. '+(pe.grid
+      ? W.gc.toFixed(1)+' MW grid connection at '+Math.round(W.pePct)+'% operational ceiling = '+pe.E.toFixed(1)+' MW usable.'
+      : 'The '+(R.p.IT_kW/1000).toFixed(1)+' MW of IT needs a '+pe.feed.toFixed(1)+' MW substation feed at '+
+        Math.round(W.pePct)+'% usable.')+
+      ' At the N-year design day this envelope carries approximately '+pe.itB.toFixed(1)+' MW of IT before IceBrick; with IceBrick approximately '+
+      pe.itA.toFixed(1)+' MW - an extra '+pe.extra.toFixed(1)+' MW of IT (+'+(pe.itB>0?(100*pe.extra/pe.itB).toFixed(1):'0')+'%) inside the same envelope, from the same feed, '+
+      'with no new grid application.'); }
   para('Scope. This is a modelled study built from climate normals and a single published chiller datasheet. It is '+
        'an engineering estimate intended to size the opportunity, not a performance guarantee and not a substitute '+
        'for a site-specific design.');
@@ -4032,7 +4215,9 @@ function runCode(){
     'DS'+n0(W.chE!=null?W.chE:10),
     'N'+W.N,
     'MU'+(Math.round(W.mult*100)/100)
-  ].join('-');
+  ].concat((W.peMode==='grid'&&W.gc>0)?['GC'+n1(W.gc)]:[])
+   .concat((W.pePct!==80||(W.peMode==='grid'&&W.gc>0))?['PP'+n0(W.pePct)]:[])
+   .join('-');
 }
 
 // THE ID IS AN ELEMENT THE TABLE REBUILDS EVERY PAINT, so the listener goes on fresh each time - no
