@@ -813,16 +813,11 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
             <div class="hint" id="mult_hint"></div>
           </div>
           <div class="sl">
-            <label>Charging starts <span class="val" id="v_chs">23:00</span></label>
-            <input type="range" id="i_chs" min="19" max="26" step="1" value="23">
-            <div class="hint">Evening hours before this stay <i>dischargeable</i> — push it past midnight (00:00–02:00)
-              and a hot 23:00 stops being a floor hour.</div>
-          </div>
-          <div class="sl">
-            <label>Discharge begins <span class="val" id="v_che">10:00</span></label>
-            <input type="range" id="i_che" min="6" max="14" step="1" value="10">
-            <div class="hint">The Storage may only help from this hour on. Earlier lowers the floor — at the cost of
-              charging hours on the same mornings.</div>
+            <label>Dispatch windows</label>
+            <div style="font-family:var(--mono);font-size:12.5px;color:var(--water);padding:7px 0 2px">automatic — chosen per hour</div>
+            <div class="hint">The dispatcher is free in every hour: it discharges wherever the meter would breach the
+              ceiling and charges wherever there is room beneath it, with perfect foresight of the year. No fixed
+              charge window exists any more.</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span class="pill" id="cv_size">—</span>
@@ -1265,6 +1260,11 @@ function liftK(t){
     return a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0]);}
   return A[n-1][1];
 }
+// UNIT COUNTS ARE QUOTED IN SITE-SCALED BLOCKS. Physics stays the YVFA datasheet per RT;
+// only the COUNT statements scale with the site: under 20 MW of IT quote 350 RT units,
+// 20-30 MW quote 700 RT, 30 MW and up quote 1050 RT.
+const dispRT=()=>W.IT<20?350:(W.IT<30?700:1050);
+const dispCnt=th=>(th/(dispRT()*TON_KW)).toFixed(1);
 const nUnits=kw=>Math.ceil(kw/CHILLER.kWth-1e-9);        // whole machines needed
 const FIX={appr:6, eps:0.80, loopdt:8};
 // INTEGRAL-COIL CHANGEOVER, READ OFF THE SHEET. The YVFA's Part Load Rating Data was taken
@@ -1305,7 +1305,7 @@ function copAt(o,FWS,p,x,hd){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='91';                                           // build — stamped on the masthead and inside every run code
+const VER='93';                                           // build — stamped on the masthead and inside every run code
 const DES_BAND=3;                                         // K — how close to the day's hottest hour still counts as a sizing hour                                    // kWth of chiller installed per kW of IT
 let PLANT_TH=0;                                           // kWth installed \u2014 set once per run
 function plantTh(p,N){ return p.IT_kW>1e-9?PLANT_RATIO*p.IT_kW:0; }
@@ -1504,7 +1504,9 @@ function dayOps(dayH,FWS,p){
   const facB=bl.map(x=>x.fac), mechB=bl.map(x=>x.mech);          // MW
   const thB=bl.map(x=>x.th), fixB=bl.map(x=>x.fix);              // kWth of compressor duty, MW of everything else
   const e0=mechB.map(x=>x*1000);                                 // kW electric the compressors draw untouched
-  const isC=dayH.map(o=>isChg(o.hh));
+  // AUTO-DISPATCH. No fixed window: any hour may discharge (if it would breach the ceiling) or
+  // charge (if there is room beneath it). The two are mutually exclusive by the threshold itself.
+  const isC=dayH.map(()=>false);
   // THE DECISION VARIABLE IS THERMAL, NOT ELECTRIC. Once the chillers have a part-load curve, the
   // electric a handover saves depends on where the surviving duty lands on that curve — so electric
   // in, electric out is circular. Thermal is not: the hour's duty is fixed by the load and the
@@ -1539,7 +1541,6 @@ function dayOps(dayH,FWS,p){
   const facChg=(i,c)=>
     facB[i]+(c>1e-9?c/copAt(dayH[i],FWS-CHG_DT,p,xIce(i,c)):0)/1000;
   const solveU=(F,i)=>{
-    if(isC[i])return 0;
     const t=thB[i]; if(t<=1e-9||facB[i]<=F)return 0;
     if(facDis(i,t)>=F)return t;                // even a full handover cannot reach F — do everything
     let lo=0,hi=t;
@@ -1547,7 +1548,6 @@ function dayOps(dayH,FWS,p){
     return hi;
   };
   const solveC=(F,i)=>{
-    if(!isC[i])return 0;
     const cap=capTh[i]; if(cap<=1e-9||facB[i]>=F)return 0;
     if(facChg(i,cap)<=F)return cap;
     let lo=0,hi=cap;
@@ -1574,7 +1574,7 @@ function levelDay(dayH,FWS,p,target,chgNeed){
   if(target!=null){ F=target; }                                  // hold the line, do not shave past it
   else{
     let lo=Math.min(...facB)-1,
-        hi=Math.max(...facB, ...dayH.map((o,i)=>isC[i]?facChg(i,capTh[i]):0))+1;
+        hi=Math.max(...facB, ...dayH.map((o,i)=>facChg(i,capTh[i])))+1;
     // DEGENERATE DAY. On a warm loop the compressor can be so nearly off that there is nothing worth
     // shaving, or the charge window has nowhere to put it. The flattest level such a day can hold is
     // simply its own peak, and it asks nothing of the Storage — say so instead of letting the bisection
@@ -1616,7 +1616,7 @@ function levelDay(dayH,FWS,p,target,chgNeed){
   const raw=[],wp=[],lf=[],el=[];
   dayH.forEach((o,i)=>{
     const t=thB[i];
-    if(isC[i]){
+    if(chgTh[i]>1e-9){
       const c=chgTh[i];
       if(t<=1e-9&&c<=1e-9){raw.push(0);wp.push(0);lf.push(0);el.push(0);return;}
       const eC=c>1e-9?c/copAt(o,FWS-CHG_DT,p,xIce(i,c)):0;
@@ -1651,7 +1651,7 @@ function carryFloor(ops){
   // size-versus-peak curve goes flat, and past that point more storage buys exactly nothing.
   let fl=-Infinity;
   ops.forEach(O=>{for(let i=0;i<O.facB.length;i++){
-    const v=O.isC[i]?O.facB[i]:O.facDis(i,O.thB[i]); if(v>fl)fl=v;}});
+    const v=O.facDis(i,O.thB[i]); if(v>fl)fl=v;}});
   return fl;
 }
 // capC bounds the search from above with the single-night answer. A bigger IceBrick array can never do worse —
@@ -1796,6 +1796,11 @@ function runStorage(p,base,N){
   // single-night rule needs; everything about a bigger Storage is quoted as a multiple of it.
   const S1=Math.max(...ops.map(O=>O.shavedAt(target)*CHG_LOSS));
   const floor=carryFloor(ops);
+  // the sizing hour for the chart: the year's hardest battery-off hour - the day whose books
+  // the ceiling is balanced against. (The floor itself is now nearly flat - fixed loads only -
+  // so it no longer names an interesting hour.)
+  let floorH=0;{let fv=-Infinity;
+    for(let h=0;h<bH.fac.length;h++) if(bH.fac[h]>fv){fv=bH.fac[h]; floorH=h;}}
   // PASS 1b — carry. Above one night, the ceiling is no longer a per-day answer: it is whatever a
   // reservoir of this size can hold the whole year to, given it may bank ahead of a hot run.
   const mult=Math.max(1,W.mult||1);
@@ -1821,7 +1826,7 @@ function runStorage(p,base,N){
       const a=bFac-elMW;
       iceFac.push(a); mechI.push(bMech-elMW); midArr.push(a+effMW);
       chgThA.push(lc.chgTh[i]); disThA.push(lc.disTh[i]);
-      if(isChg(o.hh)){
+      if(lc.chgTh[i]>1e-9){
         cE+=-lc.el[i];
         chgArr.push(-elMW); disArr.push(0);
         // cascade 2 also fogs while charging if the night is hot (rare)
@@ -1848,7 +1853,7 @@ function runStorage(p,base,N){
     // let the display surfaces drop the sentence rather than sell hardware for a Storage that never cycles.
     icePlantTh:(chgPkTh>1e-9?iceP.cap:0), iceCurve:iceP.curve,
     baseHi:bH.fac,   // the same plant on the guaranteed loop with NO Storage — the only honest reference for what the battery does
-    S1,C1,mult,floor,carried:cy?cy.imported:0,stock:cy?cy.stock:null,ops,
+    S1,C1,mult,floor,floorH,carried:cy?cy.imported:0,stock:cy?cy.stock:null,ops,
     waterI, pkMW:pkI, pkPue:pkI/base.itMW,
     pue:(iceFac.reduce((a,b)=>a+b,0))/base.itE};
 }
@@ -1899,10 +1904,10 @@ function runDesignDayIce(p,N,st){
     // about 40% load is already off the good part of its curve, and taking more off it there costs
     // rather than saves — in which case the true movement is the smaller number and the block shows
     // that, with no pink rim to claim a gain that is not there.
-    if(isChg(o.hh)){ chg.push(-elMW); chgRaw.push(Math.min(-rawMW,-elMW)); chgEff.push(-effMW);
-                     dis.push(0); disRaw.push(0); disEff.push(0); }
-    else           { dis.push(elMW);  disRaw.push(Math.min(rawMW,elMW));   disEff.push(effMW);
-                     chg.push(0); chgRaw.push(0); chgEff.push(0); }
+    if(elMW<0){ chg.push(-elMW); chgRaw.push(Math.min(-rawMW,-elMW)); chgEff.push(-effMW);
+                dis.push(0); disRaw.push(0); disEff.push(0); }
+    else      { dis.push(elMW);  disRaw.push(Math.min(rawMW,elMW));   disEff.push(effMW);
+                chg.push(0); chgRaw.push(0); chgEff.push(0); }
     amb.push(o.T);
     labels.push(i<ext.length-24 ? String(o.hh).padStart(2,'0')+':00⁻¹' : String(o.hh).padStart(2,'0')+':00');
   });
@@ -2418,13 +2423,7 @@ document.addEventListener('DOMContentLoaded',()=>{const el=$('i_mult'); if(!el)r
     W.mult=parseFloat(el.value);
     $('v_mult').textContent=mfmt(W.mult)+'\u00d7 one night';
     rerun(); });
-  // THE WINDOW SLIDERS RE-SOLVE EVERYTHING DOWNSTREAM: floor, ceiling, knee, IceBrick array — the whole
-  // sizing chain reads isChg(), so moving an edge is a full storage re-run, debounced like mult.
-  const cs=$('i_chs'), ce=$('i_che');
-  if(cs)cs.addEventListener('input',()=>{ W.chS=parseInt(cs.value,10)%24;
-    $('v_chs').textContent=hh2(W.chS); rerun(); });
-  if(ce)ce.addEventListener('input',()=>{ W.chE=parseInt(ce.value,10);
-    $('v_che').textContent=hh2(W.chE); rerun(); });});
+});
 bind('i_oh','v_oh',v=>W.oh=v/100);
 
 function recap(){
@@ -2803,8 +2802,8 @@ function paintDay(){
   $('dd_tag').textContent=`N${W.N} · ${dn.dateStr} · ${HUBS[W.hub].name}`;
   const b=R.base;
   $('dd_note').innerHTML=`On this day your facility peaks at <b>${d.pkMW.toFixed(2)} MW</b> — a design-day PUE of <b>${d.pkPue.toFixed(3)}</b> — `+
-    `with <b>${rtStr(d.chillPk)}</b> landing on the compressors. You have <b>${(PLANT_TH/CHILLER.kWth).toFixed(1)} × ${CHILLER.short}</b> `+
-    `air-cooled chillers installed at ${CHILLER.tons.toFixed(1)} ton.R each — ${PLANT_RATIO.toFixed(1)} kWth per kW of IT, the way plants are actually specified — `+
+    `with <b>${rtStr(d.chillPk)}</b> landing on the compressors. You have <b>${dispCnt(PLANT_TH)} × ${dispRT()} RT</b> `+
+    `air-cooled chiller units installed (${CHILLER.short} performance per RT) — ${PLANT_RATIO.toFixed(1)} kWth per kW of IT, the way plants are actually specified — `+
     `so even on the worst hour of the year they are running at <b>${Math.round(100*d.chillPk/(PLANT_TH||1))}% of nameplate</b>, not pinned. `+
     `Stack the whole cooling plant on the IT + ancillary base and it lands exactly on the facility line: at the peak hour <b>${d.mech[d.fac.indexOf(d.pkMW)].toFixed(2)} MW</b> of it is compressor and `+
     `<b>${(d.cool[d.fac.indexOf(d.pkMW)]-d.mech[d.fac.indexOf(d.pkMW)]).toFixed(2)} MW</b> is CDU pumps and primary pumps \u2014 the chiller's own condenser fans are already inside its datasheet kW. `+
@@ -2973,12 +2972,9 @@ function paintCV(){
         `this site as low as any amount of ice can. `
       : `Going bigger — carrying ice across days into a heat wave — is worth <b>${extra.toFixed(2)} MW</b> more, and essentially `+
         `all of it is in hand by <b>${satStr}×</b>; past that the curve is flat. `)+
-    `The flat line is the <b>${floor.toFixed(2)} MW</b> floor, and it is a rulebook limit, not a storage limit: the Storage only `+
-    `discharges after ${hh2(CHG_E)}, so the hottest hours <i>inside</i> the ${winStr()} charge window are hours no storage of any size `+
-    `is allowed to help \u2014 on this run that hour is <b>${(function(){let fi=0,fv=-1;const bh=st.baseHi;
-      for(let h=0;h<8760;h++){const hh=h%24;if(isChg(hh)&&bh[h]>fv){fv=bh[h];fi=h;}}
-      return dLbl(fi)+' \u00b7 '+String(fi%24).padStart(2,'0')+':00';})()}</b>, and everything above it is sized down to `+
-    `that hour's level. Extra storage is insurance down to that floor \u2014 never past it; the night headroom the charging `+
+    `The flat line is the <b>${floor.toFixed(2)} MW</b> floor, and with the dispatcher free in every hour it is physics, `+
+    `not rulebook: it is what the facility draws with the compressors' entire duty handed to the Storage \u2014 `+
+    `IT, ancillary and pumps, the part no cooling strategy can touch. No storage of any size gets beneath it. Extra storage is insurance down to that floor \u2014 never past it; the headroom the charging `+
     `plant leaves unused past its knee is deliberate, because ice bought beyond the knee melts without the meter ever noticing. `+
     (st.icePlantTh>0
       ? `Charging rate is no constraint either: ice is made by IceBrick's own <b>${rtOnly(st.icePlantTh)}</b> plant on its own, `+
@@ -3098,7 +3094,7 @@ function paintRetire(di,st){
       `against the ghost even a 3 a.m. charging hour would sit below the old curve and read as if the Storage were discharging in the `+
       `middle of the night. Measured against the storage-free line it reads correctly. `
     : ``)+
-    `<b style="color:${C().chgB}">Dark blue</b> is load the Storage <i>adds</i> to freeze, always inside the ${winStr()} window. `+
+    `<b style="color:${C().chgB}">Dark blue</b> is load the Storage <i>adds</i> to freeze, placed by the dispatcher wherever the ceiling leaves room. `+
     `<b style="color:${C().disB}">Light blue</b> is load it takes back off during the day. `+
     `<b style="color:${C().wpB}">Pink</b> is neither — it is the extra electric the surviving chillers save because they are `+
     `post-cooled to a lower lift and sitting at a better part-load point, and it runs the other way at night, as a cost, `+
@@ -3130,7 +3126,7 @@ function paintRetire(di,st){
         `<b>${fmtInt(di.carriedIn/TON_KW)} ton-h</b> of what it spends today was frozen on an earlier, milder night, because the worst `+
         `day of the year is usually preceded by nights too warm to charge cheaply. `
       : ``)+
-    `The thermal battery stores up <b>${fmtInt(di.chargedTh/TON_KW)} ton-h</b> inside the ${winStr()} window, when the lift is smallest and a `+
+    `The thermal battery stores up <b>${fmtInt(di.chargedTh/TON_KW)} ton-h</b> in the hours the dispatcher finds cheapest \u2014 cool, low-lift, and with room under the ceiling \u2014 where a `+
     `ton-hour is cheapest to make. Each night hour charges with whatever chiller the facility is not already using (derated to `+
     `${(CHG_K*100).toFixed(0)}% for the colder ice loop), so the window fills flat to one ceiling \u2014 the drop in ambient temperature `+
     `relieves the chiller plant, creating the headroom for charging the IceBrick system. `+
@@ -3189,7 +3185,7 @@ function paintRetire(di,st){
     ['Night charging energy',fmtInt(st.chgE/1000)+' MWh/yr'],
     ['IceBrick size',fmtInt(st.storMaxTh/TON_KW)+' ton-h'],
     ['IceBrick charging plant (dedicated)',st.icePlantTh>0
-      ? rtOnly(st.icePlantTh)+' ('+thStr(st.icePlantTh)+') \u00b7 sized to the knee'
+      ? rtOnly(st.icePlantTh)+' ('+thStr(st.icePlantTh)+') \u00b7 '+dispCnt(st.icePlantTh)+' \u00d7 '+dispRT()+' RT units \u00b7 sized to the knee'
       : 'none \u00b7 the Storage never cycles on this site'],
     ['Peak charge rate asked of it',st.icePlantTh>0
       ? rtOnly(st.chgPkTh)+' \u00b7 '+Math.round(100*st.chgPkTh/Math.max(1,st.icePlantTh))+'% of the charging plant'
@@ -3207,7 +3203,7 @@ function paintRetire(di,st){
     ['Chiller modelled throughout',CHILLER.model],
     ['Heat dome recirculation',W.hdr>0?'+'+tD1(W.hdr)+' above 90 \u00b0F \u00b7 avoided chillers only':'none modelled'],
     ['Chiller plant installed',PLANT_RATIO.toFixed(1)+' kWth per kW IT \u00b7 '+
-      (PLANT_TH/CHILLER.kWth).toFixed(1)+' × '+CHILLER.tons.toFixed(1)+' ton.R'],
+      dispCnt(PLANT_TH)+' \u00d7 '+dispRT()+' RT'],
     ['Plant loading at the design-day peak',Math.round(100*R.dd.chillPk/(PLANT_TH||1))+'% of nameplate \u2192 '+
       Math.round(100*DBS.after/(PLANT_TH||1))+'% with IceBrick'],
     ['Thermal duty at design ambient ('+tA1(DBS.ambPk)+')',rtOnly(DBS.before)+' \u2192 '+rtOnly(DBS.after)+
@@ -3215,12 +3211,13 @@ function paintRetire(di,st){
     ['Same plant re-specified with IceBrick',DBS.cut>=0.995
       ? 'no mechanical cooling called for at design ambient'
       : (retire>0
-        ? ((PLANT_TH-retire)/CHILLER.kWth).toFixed(1)+' × '+
-          CHILLER.tons.toFixed(1)+' ton.R \u00b7 '+rtOnly(retire)+' never bought at design ambient'
+        ? dispCnt(PLANT_TH-retire)+' \u00d7 '+dispRT()+' RT \u00b7 '+rtOnly(retire)+' never bought at design ambient'
         : 'unchanged \u00b7 the thermal duty at design ambient does not fall on this site')]
-  ].map(r=>`<div style="display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line)">
-      <span style="font-size:12.5px;color:var(--muted)">${r[0]}</span>
-      <span style="font-family:var(--mono);font-size:13px;color:var(--water);text-align:right">${r[1]}</span></div>`).join('')
+  ].map(r=>{const hot=['Peak facility demand','Peak headroom released','\u2014 usable as new IT','IceBrick size',
+      'Same plant re-specified','Annual PEAK PUE'].some(k=>String(r[0]).startsWith(k));
+    return `<div style="display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line)">
+      <span style="font-size:12.5px;color:${hot?'var(--text)':'var(--muted)'};font-weight:${hot?'700':'400'}">${r[0]}</span>
+      <span style="font-family:var(--mono);font-size:13px;color:var(--water);text-align:right;font-weight:${hot?'700':'400'}">${r[1]}</span></div>`;}).join('')
     +`<div style="display:flex;justify-content:space-between;gap:16px;padding:14px 0 4px;align-items:center;flex-wrap:wrap">
       <span id="runid_lbl" style="font-size:12.5px;color:var(--muted);flex:1;min-width:190px">This is your current simulation ID. Use this to discuss this run with the team.
         <a href="#" id="runid_mail" style="color:var(--ice2);text-decoration:none;white-space:nowrap">\u2709 email it</a></span>
@@ -3469,20 +3466,16 @@ function drawFD(){
   if(typeof Chart==='undefined'||!R.st)return;
   if(chFD){chFD.destroy();chFD=null;} killChart('cFD');
   const c=C(), st=R.st, bh=st.baseHi;
-  let fi=0,fv=-1;
-  for(let h=0;h<8760;h++){ if(isChg(h%24)&&bh[h]>fv){fv=bh[h];fi=h;} }
+  const fi=(st.floorH!=null?st.floorH:0), fv=bh[fi];
   const d0=Math.max(0,Math.min(363,Math.floor(fi/24)-1)), a=d0*24, z=a+47;
-  const lab=[],ns=[],wi=[],win=[],dot=[],ceil=[];
+  const lab=[],ns=[],wi=[],dot=[],ceil=[];
   for(let h=a;h<=z;h++){
     lab.push(hh2(h%24));
     ns.push(bh[h]); wi.push(st.iceFac[h]);
-    win.push(isChg(h%24)?st.pkMW:null);
     ceil.push(st.pkMW);
     dot.push(h===fi?bh[h]:null);
   }
   chFD=new Chart($('cFD'),{type:'line',data:{labels:lab,datasets:[
-    {label:'Charge window — the Storage is not allowed to help',data:win,borderColor:'transparent',
-     backgroundColor:'rgba(59,130,246,0.10)',pointRadius:0,fill:'origin',stepped:true,order:9},
     {label:'Facility, battery off',data:ns,borderColor:c.ghost,backgroundColor:'transparent',
      borderWidth:1.6,pointRadius:0,fill:false,tension:.25,order:2},
     {label:'With IceBrick',data:wi,borderColor:c.chiller,backgroundColor:'transparent',
@@ -3500,17 +3493,16 @@ function drawFD(){
       y:{grid:{color:c.grid},ticks:{color:c.tick},
          title:{display:true,text:'MW electric \u2014 whole facility',color:c.tick}}}}});
   buildLegend($('fd_legend'),chFD,[
-    {lb:'Charge window \u2014 Storage not allowed to help',col:'rgba(59,130,246,0.35)',i:0},
-    {lb:'Facility, battery off',col:c.ghost,i:1},
-    {lb:'With IceBrick',col:c.chiller,i:2},
-    {lb:'New ceiling \u2014 '+st.pkMW.toFixed(2)+' MW',col:c.chiller,i:3,dash:true},
-    {lb:'The sizing hour',col:'#e02020',i:4}]);
-  $('fd_tag').textContent=dLbl(fi)+' \u00b7 '+hh2(fi%24)+' \u2014 the hottest hour inside the '+winStr()+' charge window';
+    {lb:'Facility, battery off',col:c.ghost,i:0},
+    {lb:'With IceBrick',col:c.chiller,i:1},
+    {lb:'New ceiling \u2014 '+st.pkMW.toFixed(2)+' MW',col:c.chiller,i:2,dash:true},
+    {lb:'The sizing hour',col:'#e02020',i:3}]);
+  $('fd_tag').textContent=dLbl(fi)+' \u00b7 '+hh2(fi%24)+' \u2014 the hardest hour of the year, battery off';
   $('fd_note').innerHTML=`Every size in this study traces back to the red dot: <b>${dLbl(fi)} \u00b7 ${hh2(fi%24)}</b>, `+
-    `${fv.toFixed(2)} MW with the battery off \u2014 the hottest hour inside the shaded ${winStr()} charge window, where the `+
-    `Storage is not allowed to discharge. The days around it are shaved flat onto the ceiling; this hour cannot be, so the `+
-    `ceiling settles at its level and the plant, IceBrick array and charging knee are all bought against it. Move the window sliders `+
-    `above and watch this chart re-pick its hour.`;
+    `${fv.toFixed(2)} MW with the battery off \u2014 the hardest hour of the year, and the day the ceiling is balanced `+
+    `against. The dispatcher may use any hour, so nothing here is off-limits: the whole day is shaved onto the `+
+    `<b>${st.pkMW.toFixed(2)} MW</b> ceiling, and how much shaving this one day needs \u2014 against what its own cool hours `+
+    `and the nights before it can bank \u2014 is what sizes the plant, the IceBrick array and the charging knee.`;
 }
 
 let ndMode='cool';
@@ -4136,14 +4128,14 @@ async function buildPDF(){
        'honest reading of a modern VSD screw estate and it is what the part-load curve in the datasheet describes. '+
        'The one documented exception is the ice circuit, which is treated as a designated set of machines on their '+
        'own colder loop, so night charging never appears on the part-load curve of the chillers holding the facility.');
-  para('Dispatch. The Storage charges inside the '+winStr().replace('\u2013',' to ')+' window and may only discharge after '+hh2(CHG_E)+'. Charging is capped '+
-       'at the derated spare thermal capacity of the plant in that hour. A greedy fill-to-the-brim pass is followed '+
-       'by a backward dynamic-programming pass so that a mild night ahead of a hot run is used to buy down the days '+
-       'in that run whose own nights are too warm to charge properly, and the annual ceiling is then found by '+
-       'bisection.');
+  para('Dispatch. The dispatcher is free in every hour: it discharges wherever the facility would otherwise breach '+
+       'the annual ceiling and charges wherever there is room beneath it, on the charging plant\u2019s own colder circuit. '+
+       'A greedy fill-to-the-brim pass settles feasibility, a backward just-in-time pass strips every ton-hour that is '+
+       'not needed, a mild night ahead of a hot run is used to buy down the days in that run whose own nights are too '+
+       'warm to charge cheaply, and the annual ceiling is then found by bisection.');
   para('Reported peak. The peak facility demand with IceBrick is the greater of the leveller’s ceiling and the '+
-       'floor — the highest hour the Storage is not permitted to help, which is normally an hour inside the charge '+
-       'window. That is why the flat daytime plateau on the side-by-side chart can read slightly below the quoted '+
+       'floor — the hour whose facility draw stays highest even with the entire compressor duty handed to the Storage. '+
+       'That is why the flat daytime plateau on the side-by-side chart can read slightly below the quoted '+
        'peak: the plateau is the ceiling, the quoted number is the worse of the two.');
   if(R.st){ const pe=peCalc();
     para('Power envelope. '+(pe.grid
@@ -4211,8 +4203,6 @@ function runCode(){
     'HI'+n1(p.FWShi!=null?p.FWShi:W.FWShi),
     'OH'+n0((p.oh!=null?p.oh:W.oh)*100),
     'HD'+n1(W.hdr||0),
-    'CS'+n0(W.chS!=null?W.chS:23),
-    'DS'+n0(W.chE!=null?W.chE:10),
     'N'+W.N,
     'MU'+(Math.round(W.mult*100)/100)
   ].concat((W.peMode==='grid'&&W.gc>0)?['GC'+n1(W.gc)]:[])
