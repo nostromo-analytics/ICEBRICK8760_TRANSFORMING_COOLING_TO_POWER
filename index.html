@@ -360,7 +360,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       <div class="mapwrap">
         <svg class="usmap" id="usmap" viewBox="0 0 980 600" role="group" aria-label="US data center hubs"></svg>
         <div class="mapcap"><b id="map_name">—</b><span id="map_sub"></span>
-          <span class="maphint">20 US hubs</span></div>
+          <span class="maphint">20 US hubs + Shoham (IL)</span></div>
       </div>
       <div class="chiprow" id="hubgrid"></div>
     </div>
@@ -370,9 +370,33 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       <div class="qnum">Question 2 of 7</div>
       <div class="qtitle">Name Your Power Envelope</div>
       <p class="qhelp">Every project starts from one of two numbers — the substation connection you were offered,
-        or the IT nameplate you want to install. Type yours into its box, set the two sliders every path needs,
-        and continue from that box: the other quantity is derived for you at the design day.</p>
-      <div class="slrow">
+        or the IT nameplate you want to install. Type yours into its box and continue from that box: the other
+        quantity is derived for you at the design day. The two sliders below the boxes apply to both paths.</p>
+      <div class="slrow" style="margin-top:8px">
+        <div>
+          <div class="qtitle" style="font-size:17px;margin:0 0 8px">Choose your Substation feed (MW)</div>
+          <div class="sl peroad" id="pe_grid_road" style="min-width:0">
+            <label>Your number <span class="val" id="v_pe_gc">— MW</span></label>
+            <input type="text" id="i_pe_gc" class="txtin" inputmode="decimal" spellcheck="false" autocomplete="off"
+              placeholder="e.g. 60" style="width:100%;font-family:var(--mono);font-size:14px;padding:9px 12px;margin-bottom:8px">
+            <div class="hint" id="pe_avail" style="min-height:56px">Type a number above and this column reads it as
+              your substation connection.</div>
+            <button class="btn pri" id="pe_go_gc" style="margin-top:10px;width:100%">Continue as connection size →</button>
+          </div>
+        </div>
+        <div>
+          <div class="qtitle" style="font-size:17px;margin:0 0 8px">Choose your IT-Nameplate (MW)</div>
+          <div class="sl peroad" id="pe_it_road" style="min-width:0">
+            <label>Your number <span class="val" id="v_pe_it">— MW</span></label>
+            <input type="text" id="i_pe_it" class="txtin" inputmode="decimal" spellcheck="false" autocomplete="off"
+              placeholder="e.g. 36" style="width:100%;font-family:var(--mono);font-size:14px;padding:9px 12px;margin-bottom:8px">
+            <div class="hint" id="pe_feed" style="min-height:56px">Type a number above and this column reads it as
+              your IT nameplate.</div>
+            <button class="btn pri" id="pe_go_it" style="margin-top:10px;width:100%">Continue as IT nameplate →</button>
+          </div>
+        </div>
+      </div>
+      <div class="slrow" style="margin-top:18px">
         <div class="sl">
           <label>Operational ceiling — usable share of the connection <span class="val" id="v_pp1">80%</span></label>
           <input type="range" id="i_pp1" min="70" max="90" step="1" value="80">
@@ -385,28 +409,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
             with efficient UPS lands near 8–10%; older estates run 12–16%.</div>
         </div>
       </div>
-      <div class="slrow" style="margin-top:8px">
-        <div class="sl peroad" id="pe_grid_road">
-          <div class="pehead" style="text-transform:none">The input MW is your connection (substation) size</div>
-          <label>Your number <span class="val" id="v_pe_gc">— MW</span></label>
-          <input type="text" id="i_pe_gc" class="txtin" inputmode="decimal" spellcheck="false" autocomplete="off"
-            placeholder="e.g. 60" style="width:100%;font-family:var(--mono);font-size:14px;padding:9px 12px;margin-bottom:8px">
-          <div class="hint" id="pe_avail" style="min-height:56px">Type a number above and this column reads it as
-            your substation connection.</div>
-          <button class="btn pri" id="pe_go_gc" style="margin-top:10px;width:100%">Continue as connection size →</button>
-        </div>
-        <div class="sl peroad" id="pe_it_road">
-          <div class="pehead" style="text-transform:none">The input MW is your IT Nameplate</div>
-          <label>Your number <span class="val" id="v_pe_it">— MW</span></label>
-          <input type="text" id="i_pe_it" class="txtin" inputmode="decimal" spellcheck="false" autocomplete="off"
-            placeholder="e.g. 36" style="width:100%;font-family:var(--mono);font-size:14px;padding:9px 12px;margin-bottom:8px">
-          <div class="hint" id="pe_feed" style="min-height:56px">Type a number above and this column reads it as
-            your IT nameplate.</div>
-          <button class="btn pri" id="pe_go_it" style="margin-top:10px;width:100%">Continue as IT nameplate →</button>
-        </div>
-      </div>
     </div>
-
     <!-- Q3 — cascade -->
     <div class="qstep" data-q="2">
       <div class="qnum">Question 3 of 7</div>
@@ -1031,7 +1034,9 @@ const HUBS = {
  lit:{name:"Little Rock",sub:"Arkansas",seed:18,clim:"Humid subtropical · hot, humid summers",
    T:[5,8,12,17,21,26,28,28,24,17,11,6],R:[11,11,12,12,11,11,11,11,11,12,11,10],Td:[-2,0,4,10,15,20,21,21,17,10,4,-1]},
  apx:{name:"Appomattox",sub:"Virginia",seed:19,clim:"Humid subtropical · inland Piedmont",
-   T:[3,4,9,14,19,23,25,24,21,14,9,4],R:[11,12,13,13,12,12,11,11,12,12,11,11],Td:[-4,-4,0,5,11,17,19,19,15,8,2,-3]}
+   T:[3,4,9,14,19,23,25,24,21,14,9,4],R:[11,12,13,13,12,12,11,11,12,12,11,11],Td:[-4,-4,0,5,11,17,19,19,15,8,2,-3]},
+ shm:{name:"Shoham",sub:"Israel · Ben Gurion Airport",seed:41,clim:"Eastern Mediterranean · hot dry summers, mild wet winters",
+   T:[13,13,15,18,21,24,26,27,25,22,18,14],R:[10,10,11,12,13,12,11,11,11,11,10,10],Td:[7,8,9,11,14,18,20,21,19,16,12,9]}
 };
 const CASCADES={
  1:{name:"True waterless",short:"Dry coolers + air-cooled chillers",
@@ -1305,7 +1310,7 @@ function copAt(o,FWS,p,x,hd){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='93';                                           // build — stamped on the masthead and inside every run code
+const VER='95';                                           // build — stamped on the masthead and inside every run code
 const DES_BAND=3;                                         // K — how close to the day's hottest hour still counts as a sizing hour                                    // kWth of chiller installed per kW of IT
 let PLANT_TH=0;                                           // kWth installed \u2014 set once per run
 function plantTh(p,N){ return p.IT_kW>1e-9?PLANT_RATIO*p.IT_kW:0; }
@@ -2129,7 +2134,10 @@ let STEP=0; const NSTEP=7;
   aus:[466.9,482,-12,5,'end','Austin'],
   lit:[565.3,381.7,12,-4,'start','Little Rock'],
   bdn:[610,434.3,12,10,'start','Brandon'],
-  apx:[794.5,298.3,-12,6,'end','Appomattox']};
+  apx:[794.5,298.3,-12,6,'end','Appomattox'],
+  // Shoham is real weather from Ben Gurion Airport, Israel - the dot merely borrows a spot
+  // south of the border so it fits on this map. Geography symbolic, meteorology genuine.
+  shm:[420,548,12,4,'start','Shoham']};
   const sv=$('usmap');
   let g='<path class="land" d="'+MAP_LAND+'"/><path class="states" d="'+MAP_STATES+'"/>';
   for(const k in MAPXY){
