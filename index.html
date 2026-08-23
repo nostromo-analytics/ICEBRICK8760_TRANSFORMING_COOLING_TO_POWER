@@ -983,6 +983,32 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
   </div>
 </div>
 
+<!-- ==================== LEAD GATE ====================
+     Shown once, the first time a visitor asks for the IceBrick comparison. Passing it
+     unlocks the rest of this browser's session (see LEAD_KEY in the script) — nobody
+     re-types this on their second run or their next configuration. -->
+<div class="ovl" id="leadovl" style="display:none">
+  <div class="ovlbox">
+    <h3 class="ovlh">Before we show you the numbers</h3>
+    <p class="ovlp">The IceBrick comparison, the before/after charts and the downloadable report are gated —
+      tell us who's looking and they're yours for the rest of this session.</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input type="text" id="lead_company" class="txtin" placeholder="Company name" spellcheck="false" autocomplete="organization">
+      <input type="text" id="lead_title" class="txtin" placeholder="Job title" spellcheck="false" autocomplete="organization-title">
+      <input type="email" id="lead_email" class="txtin" placeholder="Work email" spellcheck="false" autocomplete="email">
+      <!-- honeypot — invisible and unreachable to a real visitor (off-screen, no tab stop); a filled
+           value marks the submit as a bot, so we quietly skip the write but still let it through. -->
+      <input type="text" id="lead_hp" name="company_website" class="txtin" tabindex="-1" autocomplete="off"
+        style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
+    </div>
+    <div class="ovlhint" id="leadhint"></div>
+    <div class="ovlrow">
+      <button class="btn" id="lead_cancel">Not now</button>
+      <button class="btn pri" id="lead_ok">Show me the numbers</button>
+    </div>
+  </div>
+</div>
+
 <div class="ftr">
   <img alt="Nostromo — Transforming Cooling to Power" style="height:58px;display:block;margin:0 auto 12px"
     src="data:image/png;base64,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">
@@ -2940,9 +2966,91 @@ $('i_n').addEventListener('input',()=>{
 });
 
 // ============================================================================
+//  LEAD GATE — company / title / email, once per browser, before the IceBrick
+//  comparison and the PDF unlock. Submission goes to a Google Apps Script Web
+//  App bound to the response Sheet: server-side code you own, running under
+//  your Google account, appending a row directly via the Sheets API. Unlike a
+//  Google Form's own submission endpoint, there is no session/anti-abuse token
+//  tied to a live page render to get right — a Web App is a plain HTTP
+//  endpoint built to be called from arbitrary clients, so it does not silently
+//  drop a well-formed request the way Forms was observed to.
+//
+//  This page cannot hide LEAD_ENDPOINT from anyone who views source — that is
+//  true of any purely static site. What it DOES protect is the list of leads
+//  you have already collected: this code only ever WRITES a new row, it never
+//  reads one back, so there is no path from this page to the leads already
+//  sitting in your Sheet. Access to that list is controlled entirely by who
+//  you share the Google Sheet with. The email-format check that used to live
+//  on the Form question now lives in the Apps Script itself (see doPost in the
+//  script you deployed) — a direct POST that skips this page and its honeypot
+//  still can't write a malformed row, same guarantee as before.
+// ============================================================================
+const LEAD_ENDPOINT='https://script.google.com/macros/s/AKfycbwc9K3Jrbfht7Wbf1_pYoO0zaAmy_PBxHQgf0P8yS03IsFxtPzWgEepn8SffTsnvqz0BQ/exec';
+const LEAD_KEY='IB8760_LEAD';
+const leadCaptured=()=>{try{return !!localStorage.getItem(LEAD_KEY);}catch(e){return false;}};
+function leadSave(rec){try{localStorage.setItem(LEAD_KEY,JSON.stringify(rec));}catch(e){}}
+function leadLoad(){try{return JSON.parse(localStorage.getItem(LEAD_KEY)||'null');}catch(e){return null;}}
+function leadSubmit(rec){
+  if(!LEAD_ENDPOINT||LEAD_ENDPOINT.indexOf('REPLACE')===0)return;   // not configured yet — skip silently
+  // no-cors: Apps Script Web App responses go through a redirect hop that does not carry CORS
+  // headers, so a normal fetch() would throw trying to read it. The script already ran and
+  // appended the row server-side by the time that redirect happens, so fire-and-forget is not
+  // a compromise here — there is simply nothing further for the client to legitimately read.
+  const body=new URLSearchParams();
+  body.append('company',rec.company);
+  body.append('title',rec.title);
+  body.append('email',rec.email);
+  if(rec.runid) body.append('runid',rec.runid);
+  try{fetch(LEAD_ENDPOINT,{method:'POST',mode:'no-cors',body:body});}catch(e){}
+}
+function openLeadGate(onSuccess){
+  // ALREADY IDENTIFIED. No second form — but every configuration this person looks at is still its
+  // own lead worth a row, so re-submit their stored company/title/email against THIS run's fresh ID
+  // rather than only ever recording the first one they ever ran.
+  if(leadCaptured()){
+    const prior=leadLoad();
+    if(prior){let runid='';try{runid=runCode();}catch(e){} leadSubmit(Object.assign({},prior,{runid,ts:Date.now()}));}
+    onSuccess();
+    return;
+  }
+  const ovl=$('leadovl'),hint=$('leadhint');
+  const cEl=$('lead_company'),tEl=$('lead_title'),eEl=$('lead_email'),hpEl=$('lead_hp');
+  hint.textContent='';cEl.value='';tEl.value='';eEl.value='';hpEl.value='';
+  ovl.style.display='flex';
+  const say=t=>{hint.style.color='var(--chiller)';hint.textContent=t;};
+  function submit(){
+    const company=cEl.value.trim(),title=tEl.value.trim(),email=eEl.value.trim();
+    if(!company||!title||!email){say('All three fields are required.');return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){say('That does not look like a valid email address.');return;}
+    let runid=''; try{runid=runCode();}catch(e){}   // whatever the wizard was set to when the gate fired
+    const rec={company,title,email,runid,ts:Date.now()};
+    if(!hpEl.value)leadSubmit(rec);      // honeypot tripped → skip the write, still let a real visitor through
+    leadSave(rec);
+    close();
+    onSuccess();
+  }
+  function close(){ovl.style.display='none';cleanup();}
+  function cancel(){close();}            // "Not now" — leaves the gate in place for next time
+  function key(e){if(e.key==='Enter'){e.preventDefault();submit();}else if(e.key==='Escape'){cancel();}}
+  function backdrop(e){if(e.target===ovl)cancel();}
+  function cleanup(){
+    $('lead_ok').removeEventListener('click',submit);
+    $('lead_cancel').removeEventListener('click',cancel);
+    ovl.removeEventListener('click',backdrop);
+    ovl.removeEventListener('keydown',key);
+  }
+  $('lead_ok').addEventListener('click',submit);
+  $('lead_cancel').addEventListener('click',cancel);
+  ovl.addEventListener('click',backdrop);
+  ovl.addEventListener('keydown',key);
+  setTimeout(()=>cEl.focus(),50);
+}
+
+// ============================================================================
 //  THE NEXT LEVEL
 // ============================================================================
-$('go_next').addEventListener('click',()=>{
+$('go_next').addEventListener('click',()=>{ openLeadGate(revealNextLevel); });
+function revealNextLevel(){
   const btn=$('go_next'); btn.disabled=true; btn.textContent='Charging the battery…';
   setTimeout(()=>{
     try{
@@ -2968,7 +3076,7 @@ $('go_next').addEventListener('click',()=>{
       eb.textContent='Engine error: '+((err&&err.message)||err)+(rc?'\n'+rc:'')+'\nSend this box to the team.';
     }
   },60);
-});
+}
 
 // THE SIZE CURVE, IN WORDS. The chart shows where the peak lands for each IceBrick array size; this says what the
 // shape of it means. Two facts do all the work: the curve bends over, and it bends over onto a floor that
