@@ -342,10 +342,13 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
        and the wizard card should be the first thing under the masthead. -->
   <div id="wizintro">
     <p class="eyebrow">8,760-hour cooling &amp; power analytics</p>
-    <h1>IceBrick — upgrading your Data Center to the next level</h1>
-    <p class="sub">Tell us seven quick things about the site you want to test. We will build a full year of hourly
-      weather for your location, run your cooling plant through all <b>8,760 hours</b>, and show you exactly where your
-      PUE, your peak demand and your water go — and how much of it you can avoid or save.</p>
+    <h1 style="color:var(--chiller);line-height:1.08">We transform cooling into compute power<br><span style="display:block;font-size:13px;margin-top:9px;color:var(--text)">This simulator will show you exactly how</span></h1>
+    <p class="sub">Your power envelope has one weak point: <b>your mechanical cooling
+      (AKA chiller plant)</b>. It drives your peak PUE, and on the
+      hottest afternoon of the year it decides how much IT your site can carry. IceBrick changes how that cooling
+      operates — in a way no other system can. Give us a few details about your data center and we'll run all
+      <b>8,760 hours</b> of your year to show you exactly how much headroom you can reclaim: typically
+      <b>5–15% more IT capacity</b> behind the grid connection you already own.</p>
   </div>
 
   <div class="wizcard">
@@ -1351,7 +1354,7 @@ function copAt(o,FWS,p,x,hd){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='102';                                           // build — stamped on the masthead and inside every run code
+const VER='113';                                           // build — stamped on the masthead and inside every run code
 const DES_BAND=3;                                         // K — how close to the day's hottest hour still counts as a sizing hour                                    // kWth of chiller installed per kW of IT
 let PLANT_TH=0;                                           // kWth installed \u2014 set once per run
 function plantTh(p,N){ return p.IT_kW>1e-9?PLANT_RATIO*p.IT_kW:0; }
