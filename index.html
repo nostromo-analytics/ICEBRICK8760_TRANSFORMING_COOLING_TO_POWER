@@ -269,6 +269,9 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 .ftr{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:44px;
   border-top:1px solid var(--line);padding-top:24px;color:var(--faint);font-size:11.5px;
   font-family:var(--mono);flex-wrap:wrap}
+/* Nostromo footer lockup — the PNG has dark letters, so dark mode gives it a white plate */
+.nlogo{display:inline-block;line-height:0}
+:root:not([data-theme="light"]) .nlogo{background:#fff;padding:6px 14px;border-radius:9px}
 /* IceBrick logo — grey ramp, light letters first, dark on top; inverts in dark mode */
 .ilogo{display:block;width:auto;mix-blend-mode:multiply}
 :root:not([data-theme="light"]) .ilogo{filter:invert(1);mix-blend-mode:screen}
@@ -525,6 +528,20 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="schemecap" id="schemecap">&mdash;</div>
       </div>
 
+      <!-- INDUSTRY VOICE — the market is already converging on the warm loop this page prices -->
+      <a href="https://www.datacenterdynamics.com/en/analysis/hot-water-cold-water/" target="_blank" rel="noopener"
+         style="display:block;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px 20px 15px;margin:0 0 22px;text-decoration:none;color:inherit">
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <span style="flex:none;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.08em;border:2px solid var(--text);border-radius:4px;padding:3px 8px;color:var(--text)">DCD</span>
+          <div style="flex:1;min-width:240px">
+            <div style="font-family:var(--disp);font-weight:700;font-size:17.5px;line-height:1.45;color:var(--text)">&ldquo;We're seeing many of our largest customers are talking about water temperatures that are more in the
+              <mark style="background:rgba(214,69,69,.20);color:var(--chiller);padding:0 4px;border-radius:3px">80&ndash;86&nbsp;&deg;F (27&ndash;30&nbsp;&deg;C)</mark> range, not
+              <mark style="background:rgba(214,69,69,.20);color:var(--chiller);padding:0 4px;border-radius:3px">104&ndash;122&nbsp;&deg;F (40&ndash;50&nbsp;&deg;C)</mark>&rdquo;</div>
+            <div style="font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:10px">Andrew Bradner, Schneider Electric &middot; DatacenterDynamics &mdash; &ldquo;Hot water, cold water&rdquo; &nbsp;<span style="color:var(--water)">Read the full article on DCD website &rarr;</span></div>
+          </div>
+        </div>
+      </a>
+
       <div class="slrow">
         <div class="sl">
           <label><span id="lb_rs">Supply temperature to the racks</span> <span class="val" id="v_rs">30.0 &#176;C</span></label>
@@ -743,9 +760,10 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     <div class="acthead"><span class="actnum">Act 3</span>
       <h2 class="sec">Your design day — the hour everything is sized for</h2></div>
     <p class="sub" style="margin-bottom:14px">Your chillers, your switchgear and your grid connection are not sized for
-      the average hour. They are sized for the worst one. <b>N20</b> is the hottest day in a twenty-year record —
-      the industry default. Drag the selector to see how much colder an N1 year is, and how much harder an N50 gets.</p>
-    <div class="panel" style="margin-bottom:16px">
+      the average hour. They are sized for the worst one — the hottest day in the last twenty years of record
+      (<b>N20</b>, the industry default).</p>
+    <div class="hero h4" id="dd_quick" style="margin-bottom:16px"></div>
+    <div class="panel" style="display:none;margin-bottom:16px">
       <div class="nrow">
         <div class="sl">
           <label>Design-day return period <span class="val" id="v_n">N20</span></label>
@@ -759,7 +777,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         </div>
       </div>
     </div>
-    <div class="panel">
+    <div class="panel" style="display:none">
       <div class="chead">
         <div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">Design day · hour by hour</h3>
           <div class="ctag" id="dd_tag"></div></div>
@@ -808,10 +826,20 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="d"><div class="dl">IceBrick storage size</div><div class="dv" id="d_stor">—</div><div class="ds" id="d_stor_s"></div></div>
         <div class="d" id="d_h2o_w" style="display:none"><div class="dl">Cooling water saved</div><div class="dv" id="d_h2o">—</div><div class="ds" id="d_h2o_s"></div></div>
       </div>
+      <!-- OPT-IN. Storage beyond one night is specialist territory; the page asks first. -->
+      <div class="panel" id="cv_ask" style="margin-top:18px;text-align:center;padding:26px 22px">
+        <h3 class="ctitle" style="border:none;padding:0;margin:0 0 8px;text-transform:none;color:var(--text);font-size:16px">Like to test a system bigger than one full daily cycle?</h3>
+        <p class="sub" style="margin:0 auto 16px;max-width:660px">The numbers above are for a Storage sized to a single
+          night — it starts and ends every day empty. A deeper array can bank ice on a mild night and spend it days
+          later, inside a heat wave. Open the explorer to size that trade for this site.</p>
+        <button class="btn pri" id="cv_open">Yes — open the storage-size explorer</button>
+      </div>
+      <div id="cv_wrap" style="display:none">
       <div class="panel" style="margin-top:18px">
         <div class="chead">
           <div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">Like to go bigger on your storage size?</h3>
             <div class="ctag" id="cv_tag"></div></div>
+          <button class="btn ghost" id="cv_close" style="padding:6px 12px;font-size:12px">Hide this section</button>
         </div>
         <p class="sub" style="margin:0 0 12px">One night is the natural unit: bank at dusk what tomorrow will spend, and
           the IceBrick array never carries anything past breakfast. Build it deeper and it can do something a single night cannot
@@ -841,6 +869,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="legend" id="cv_legend"></div>
         <p class="hint" id="cv_note" style="margin-top:12px"></p>
       </div>
+      </div>
     </div>
 
     <div class="act" id="act6">
@@ -865,14 +894,6 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="legend" id="b1_legend"></div>
       </div>
 
-      <div class="panel" style="margin-top:18px">
-        <div class="chead"><div>
-          <h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">The day that sized the system</h3>
-          <div class="ctag" id="fd_tag"></div></div></div>
-        <div class="chartbox" style="height:300px"><canvas id="cFD"></canvas></div>
-        <div class="legend" id="fd_legend"></div>
-        <p class="hint" id="fd_note" style="margin-top:12px"></p>
-      </div>
       <div class="panel">
         <div class="chead">
           <div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">With IceBrick</h3>
@@ -883,6 +904,27 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="legend" id="b2_legend"></div>
         <p class="hint" id="b2_note" style="margin-top:12px"></p>
       </div>
+      <!-- OPT-IN DEEP-DIVE. The sizing-day chart is specialist material; the page asks first and
+           expands only on request, so a visitor who just wants the headline keeps scrolling. -->
+      <div class="panel" id="fd_ask" style="margin-top:18px;text-align:center;padding:26px 22px">
+        <h3 class="ctitle" style="border:none;padding:0;margin:0 0 8px;text-transform:none;color:var(--text);font-size:16px">Curious which hour sized this whole system?</h3>
+        <p class="sub" style="margin:0 auto 16px;max-width:660px">Every size in this study traces back to a single
+          battery-off hour — the hardest of the year, and the day the ceiling is balanced against. Open the deep-dive
+          to see it.</p>
+        <button class="btn pri" id="fd_open">Yes — show me the day that sized the system</button>
+      </div>
+      <div id="fd_wrap" style="display:none">
+      <div class="panel" style="margin-top:18px">
+        <div class="chead"><div>
+          <h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">The day that sized the system</h3>
+          <div class="ctag" id="fd_tag"></div></div>
+          <button class="btn ghost" id="fd_close" style="padding:6px 12px;font-size:12px">Hide this section</button></div>
+        <div class="chartbox" style="height:300px"><canvas id="cFD"></canvas></div>
+        <div class="legend" id="fd_legend"></div>
+        <p class="hint" id="fd_note" style="margin-top:12px"></p>
+      </div>
+      </div>
+
     </div>
 
     <div class="act" id="act7">
@@ -996,7 +1038,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     <p class="ovlp">The IceBrick comparison, the before/after charts and the downloadable report are gated —
       tell us who's looking and they're yours for the rest of this session.</p>
     <div style="display:flex;flex-direction:column;gap:12px">
-      <input type="text" id="lead_company" class="txtin" placeholder="Company name" spellcheck="false" autocomplete="organization">
+      <input type="text" id="lead_company" class="txtin" placeholder="Your name" spellcheck="false" autocomplete="name">
       <input type="text" id="lead_title" class="txtin" placeholder="Job title" spellcheck="false" autocomplete="organization-title">
       <input type="email" id="lead_email" class="txtin" placeholder="Work email" spellcheck="false" autocomplete="email">
       <!-- honeypot — invisible and unreachable to a real visitor (off-screen, no tab stop); a filled
@@ -1013,8 +1055,10 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 </div>
 
 <div class="ftr">
-  <img alt="Nostromo — Transforming Cooling to Power" style="height:58px;display:block;margin:0 auto 12px"
-    src="data:image/png;base64,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">
+  <div style="margin:0 auto 12px;text-align:center">
+    <span class="nlogo" style="margin:0 auto 7px"><img alt="Nostromo" style="height:40px;display:block" src="data:image/png;base64,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"></span>
+    <div style="font-family:var(--sans);font-weight:700;font-size:10.5px;letter-spacing:.26em;color:var(--muted);white-space:nowrap">TRANSFORMING COOLING TO POWER</div>
+  </div>
   
   <span id="foot_note">Screening-grade 8,760-hour model · synthetic weather from climate normals · swap in TMY3/AMY for bankable numbers<br>
     Chiller performance: YORK YVFA0309EVK46AAVBXO, Design Conditions Datasheet E.21.0.25809.0-D.89.0034 (YW21.00b) —
@@ -1354,7 +1398,7 @@ function copAt(o,FWS,p,x,hd){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='113';                                           // build — stamped on the masthead and inside every run code
+const VER='123';                                           // build — stamped on the masthead and inside every run code
 const DES_BAND=3;                                         // K — how close to the day's hottest hour still counts as a sizing hour                                    // kWth of chiller installed per kW of IT
 let PLANT_TH=0;                                           // kWth installed \u2014 set once per run
 function plantTh(p,N){ return p.IT_kW>1e-9?PLANT_RATIO*p.IT_kW:0; }
@@ -2801,6 +2845,15 @@ $('y_reset').addEventListener('click',()=>chYear&&chYear.resetZoom());
 function resetBoth(){ if(chB1)chB1.resetZoom(); if(chB2)chB2.resetZoom(); }
 $('b1_reset').addEventListener('click',resetBoth);
 $('b2_reset').addEventListener('click',resetBoth);
+// both deep-dives are opt-in: closed until asked for, re-drawable, and closable again
+let CV_OPEN=false;
+$('cv_open').addEventListener('click',()=>{CV_OPEN=true;hideEl('cv_ask');showEl('cv_wrap');drawCV();
+  setTimeout(()=>$('cv_wrap').scrollIntoView({behavior:'smooth',block:'nearest'}),60);});
+$('cv_close').addEventListener('click',()=>{CV_OPEN=false;showEl('cv_ask');hideEl('cv_wrap');});
+let FD_OPEN=false;
+$('fd_open').addEventListener('click',()=>{FD_OPEN=true;hideEl('fd_ask');showEl('fd_wrap');drawFD();
+  setTimeout(()=>$('fd_wrap').scrollIntoView({behavior:'smooth',block:'nearest'}),60);});
+$('fd_close').addEventListener('click',()=>{FD_OPEN=false;showEl('fd_ask');hideEl('fd_wrap');});
 
 // ---------------------------------------------------------------- act 2 KPIs
 function paintBaseline(){
@@ -2864,14 +2917,20 @@ function paintDay(){
   $('n_wb').textContent='coincident wet-bulb '+tA1(dn.wbPeak);
   $('dd_tag').textContent=`N${W.N} · ${dn.dateStr} · ${HUBS[W.hub].name}`;
   const b=R.base;
-  $('dd_note').innerHTML=`On this day your facility peaks at <b>${d.pkMW.toFixed(2)} MW</b> — a design-day PUE of <b>${d.pkPue.toFixed(3)}</b> — `+
-    `with <b>${rtStr(d.chillPk)}</b> landing on the compressors. You have <b>${dispCnt(PLANT_TH)} × ${dispRT()} RT</b> `+
-    `air-cooled chiller units installed (${CHILLER.short} performance per RT) — ${PLANT_RATIO.toFixed(1)} kWth per kW of IT, the way plants are actually specified — `+
-    `so even on the worst hour of the year they are running at <b>${Math.round(100*d.chillPk/(PLANT_TH||1))}% of nameplate</b>, not pinned. `+
-    `Stack the whole cooling plant on the IT + ancillary base and it lands exactly on the facility line: at the peak hour <b>${d.mech[d.fac.indexOf(d.pkMW)].toFixed(2)} MW</b> of it is compressor and `+
-    `<b>${(d.cool[d.fac.indexOf(d.pkMW)]-d.mech[d.fac.indexOf(d.pkMW)]).toFixed(2)} MW</b> is CDU pumps and primary pumps \u2014 the chiller's own condenser fans are already inside its datasheet kW. `+
-    `Every piece of plant on this site is bought, installed, maintained and `+
-    `financed for that one hour. It happens once. The other 8,759 hours pay for it.`;
+  // COMPACT DESIGN-DAY READOUT. N is held at 20; the section states the four facts that matter and
+  // moves on: which day, how hot and when, and what the meter and the compressors drew at the peak.
+  const iPk=d.fac.indexOf(d.pkMW);
+  let iHot=0; for(let i=1;i<d.db.length;i++) if(d.db[i]>d.db[iHot]) iHot=i;
+  $('dd_note').innerHTML=`Design day (N${W.N}): <b>${dn.dateStr}</b> \u2014 ambient peaks at `+
+    `<b>${tA1(d.db[iHot])}</b> at <b>${d.labels[iHot]}</b>. At the peak-PUE hour the facility draws `+
+    `<b>${d.pkMW.toFixed(2)} MW</b>, of which the chillers take <b>${d.mech[iPk].toFixed(2)} MW</b>.`;
+  const q=$('dd_quick'); if(q)q.innerHTML=[
+    ['Design day \u00b7 N'+W.N, dn.dateStr, 'the hottest day in '+dn.winFrom+'\u2013'+dn.winTo],
+    ['Peak ambient', tA1(d.db[iHot]), 'at '+d.labels[iHot]+' \u00b7 coincident wet-bulb '+tA1(dn.wbPeak)],
+    ['Facility demand at peak PUE', d.pkMW.toFixed(2)+' <span class="k-unit">MW</span>', 'design-day PUE '+d.pkPue.toFixed(3)],
+    ['\u2014 of which chillers', d.mech[iPk].toFixed(2)+' <span class="k-unit">MW</span>', rtStr(d.chillPk)+' on the compressors']
+  ].map(r=>`<div class="kpi"><div class="k-label" style="text-transform:none">${r[0]}</div>`+
+    `<div class="k-num">${r[1]}</div><div class="k-sub">${r[2]}</div></div>`).join('');
 }
 function drawDay(){
   if(typeof Chart==='undefined'||!R.dd)return;
@@ -3630,6 +3689,7 @@ function drawB2(){
 // dot on the exact hour. The system's whole size argument, one picture.
 function drawFD(){
   if(typeof Chart==='undefined'||!R.st)return;
+  if(!FD_OPEN)return;                       // collapsed — drawn on demand when the visitor opens it
   if(chFD){chFD.destroy();chFD=null;} killChart('cFD');
   const c=C(), st=R.st, bh=st.baseHi;
   const fi=(st.floorH!=null?st.floorH:0), fv=bh[fi];
@@ -3762,6 +3822,7 @@ function drawMon(){
 let chCV=null;
 function drawCV(){
   if(typeof Chart==='undefined'||!R.sweep||!R.st)return;
+  if(!CV_OPEN)return;                       // collapsed — drawn on demand when the explorer opens
   if(chCV){chCV.destroy();chCV=null;} killChart('cCV');
   const c=C(), sw=R.sweep, st=R.st, b=R.base;
   const pts=sw.map(o=>({x:o.m, y:b.pkFac-o.C}));
@@ -3811,6 +3872,8 @@ function refreshAll(){
 }
 function restart(){
   STAGE='wiz'; NEXTOPEN=false;
+  FD_OPEN=false; const fa=$('fd_ask'); if(fa)fa.style.display=''; const fw=$('fd_wrap'); if(fw)fw.style.display='none';
+  CV_OPEN=false; const ca=$('cv_ask'); if(ca)ca.style.display=''; const cw=$('cv_wrap'); if(cw)cw.style.display='none';
   [chYear,chDay,chB1,chB2,chND,chMon,chCV,chFD].forEach(c=>{try{c&&c.destroy();}catch(e){}});
   chYear=chDay=chB1=chB2=chND=chMon=chCV=chFD=null;
   delete R.base; delete R.dd; delete R.st; delete R.ddi;
@@ -3902,10 +3965,15 @@ async function buildPDF(){
     chB1.setDatasetVisibility(2,false); chB1.update('none');
     await sleep(40);
   }
+  // The size-curve panel may be collapsed; the report should carry it regardless. Open it for the
+  // capture (chart + legend text both live inside), then put the page back the way the visitor had it.
+  const cvWas=CV_OPEN;
+  if(!cvWas){ CV_OPEN=true; hideEl('cv_ask'); showEl('cv_wrap'); try{drawCV();}catch(e){} await sleep(80); }
   const shots={};
   ['cYear','cDay','cCV','cB1','cB2','cND','cMon'].forEach(id=>{shots[id]=pSnap(id);});
   const legs={}; ['y_legend','dd_legend','cv_legend','b1_legend','b2_legend','nd_legend','mon_legend']
     .forEach(id=>{legs[id]=pLegend(id);});
+  if(!cvWas){ CV_OPEN=false; showEl('cv_ask'); hideEl('cv_wrap'); }
 
   // FIVE DAYS, HARDEST DAY IN THE MIDDLE. The full-year frame proves the shape of the problem;
   // this window is where a reader can finally see the mechanism - one wave per day, night valleys,
@@ -4212,10 +4280,7 @@ async function buildPDF(){
   newPage();
   h1('Act 3 — The design day');
   pills([D.nTag?'Return period '+D.nTag:'',D.nDate,D.nPeak,D.nWb]);
-  tag(D.ddTag);
-  chart(shots.cDay,300);
-  legend(legs.dd_legend);
-  para(D.ddNote);
+  para(D.ddNote,11);
 
   // ---- the next level ----------------------------------------------------
   if(D.next){
@@ -4688,6 +4753,10 @@ const NB_TPL=`<svg viewBox="0 0 1240 700" xmlns="http://www.w3.org/2000/svg" rol
       <text x="920" y="172" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1.5" fill="var(--nb-store-ink)" text-anchor="middle">STORAGE</text>
       </g>
       <!-- facility tie-in -->
+      <g data-nbid="spikeBtn" style="cursor:pointer">
+        <rect x="1008" y="384" width="188" height="36" rx="10" fill="var(--nb-warm-hot)" stroke="#fff" stroke-width="1.6"></rect>
+        <text x="1102" y="407" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="700" letter-spacing="0.8" fill="#fff" text-anchor="middle">⚡ RUN ELECTRIC SPIKE</text>
+      </g>
       <line x1="1206" y1="452" x2="1206" y2="568" stroke="var(--nb-line-strong)" stroke-width="2" stroke-dasharray="4 5"></line>
       <text x="1150" y="438" font-family="'IBM Plex Mono',monospace" font-size="12" letter-spacing="1.2" fill="var(--nb-ink-soft)" text-anchor="middle">FACILITY WATER</text>
       <text x="1110" y="460" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="0.6" fill="var(--nb-cool-ink)" text-anchor="end">supply&nbsp;</text>
@@ -4769,8 +4838,14 @@ function mountNbAnim(rootId,scen,statusId){
   var statusEl=document.getElementById(statusId);
   var $=function(id){ return root.querySelector('[data-nbid="'+id+'"]'); };
   var HOT='#e8480f', YEL='#efb02a';
-  var base={ret:40,sup:35,trim:27.5,fsup:30,fret:35,tray:[38.5,39.3,40.0,40.8,41.6]};
-  var cur=JSON.parse(JSON.stringify(base));
+  var NB_DT=10;                                  // delta-T held on both loops, K
+  function baseNow(){
+    var sup0=(scen===1?W.RS:rsHi());
+    var fsup0=(scen===1?W.FWS:Math.max(W.FWShi,W.FWS));
+    return {ret:sup0+NB_DT,sup:sup0,trim:fsup0-2.5,fsup:fsup0,fret:fsup0+NB_DT,
+      tray:[-1.5,-0.7,0,0.8,1.6].map(function(o){return sup0+NB_DT+o;})};
+  }
+  var cur=baseNow();
   function clamp01(x){return x<0?0:(x>1?1:x);} function lerp(a,b,p){return a+(b-a)*clamp01(p);}
   function seg(t,a,b){return clamp01((t-a)/(b-a));} function ease(p){return p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;}
   function fmt(c){ return S.units==='us' ? (c*9/5+32).toFixed(1)+' °F' : c.toFixed(1)+' °C'; }
@@ -4830,14 +4905,15 @@ function mountNbAnim(rootId,scen,statusId){
     pings.concat(bpings).forEach(function(p){p.style.opacity='0';});
     [heatFront,coldFront,facFront,facColdFront,coldStoreFront].forEach(function(c){c.setAttribute('r','0');c.style.opacity='0';});
     colorWarm(0); colorCool(0,0); setPlateMode('cool'); setOverheat(false); setIntercept(false); setRackPulse(false);
-    cur=JSON.parse(JSON.stringify(base)); render(); }
+    cur=baseNow(); render(); }
   var WS=1.6667, T, status='';
   function applyFrame(t){
     var redStart=(scen===1)?2200:5000, Dred=3000*WS, redReach=redStart+Dred;
     var hP=ease(seg(t,redStart,redReach));
     var heatAt=(scen===1)?300:4000;
-    var ret=(t<heatAt)?40:lerp(40,56,seg(t,heatAt,redReach));
-    var sup=35,trim=27.5,wP=0,frP=0,fsP=0,csP=0,dbP=0,lbP=0,k=1,kf=1;
+    var B=baseNow();
+    var ret=lerp(B.ret,B.ret+16,hP);   // readouts ride the wave: at base until the front moves, max only when it reaches the CDU HX
+    var sup=B.sup,trim=B.trim,wP=0,frP=0,fsP=0,csP=0,dbP=0,lbP=0,k=1,kf=1;
     if(scen===1){
       // THE HARM ARRIVES IN ORDER. Hot return reaches the CDU HX, the CDU rejects it to the
       // facility return, the facility loop warms until its own SUPPLY is jeopardized, and only
@@ -4848,21 +4924,21 @@ function mountNbAnim(rootId,scen,statusId){
       frP=ease(seg(t,frStart,frEnd));
       fsP=ease(seg(t,fsStart,fsEnd));
       wP =ease(seg(t,wStart,wStart+3500*WS));
-      sup=lerp(35,52,wP);
-      cur.fsup=lerp(30,36,fsP);
+      sup=lerp(B.sup,B.sup+17,wP);
+      cur.fsup=lerp(B.fsup,B.fsup+6,fsP);
     } else {
       var detect=3000, d2=900*WS, d3=3300*WS;   // three quiet seconds, then the DCIM sees it
       var csEnd=detect+(redReach-detect)*0.7, dbEnd=csEnd+d2, lbEnd=dbEnd+d3;
       csP=ease(seg(t,detect,csEnd)); dbP=ease(seg(t,csEnd,dbEnd)); lbP=ease(seg(t,dbEnd,lbEnd));
       frP=ease(seg(t,redReach+200,redReach+200+1000*WS));
-      var bump=lerp(35,40,seg(t,csEnd,dbEnd)); sup=lerp(bump,32,lbP);
-      trim=(t<detect)?27.5:(t<dbEnd?lerp(27.5,15,seg(t,detect,dbEnd)):lerp(15,27.5,seg(t,dbEnd,lbEnd+300)));
-      if(t>csEnd){ var peak=lerp(40,56,seg(csEnd,heatAt,redReach)); ret=lerp(peak,41,ease(seg(t,csEnd,csEnd+5200))); }
+      var bump=lerp(B.sup,B.sup+5,seg(t,csEnd,dbEnd)); sup=lerp(bump,B.sup-3,lbP);
+      trim=(t<detect)?B.trim:(t<dbEnd?lerp(B.trim,B.fsup-15,seg(t,detect,dbEnd)):lerp(B.fsup-15,B.trim,seg(t,dbEnd,lbEnd+300)));
+      if(t>csEnd){ var peak=lerp(B.ret,B.ret+16,ease(seg(csEnd,redStart,redReach))); ret=lerp(peak,B.ret+1,ease(seg(t,csEnd,csEnd+5200))); }
       k=1-seg(t,lbEnd+600,lbEnd+2100); kf=1-seg(t,dbEnd-200,dbEnd+1200);
-      cur.fsup=30;
+      cur.fsup=B.fsup;
     }
     var offs=[-1.5,-0.7,0,0.8,1.6];
-    cur.ret=ret; cur.sup=sup; cur.trim=trim; cur.fret=lerp(35,38,(ret-40)/16);
+    cur.ret=ret; cur.sup=sup; cur.trim=trim; cur.fret=lerp(B.fret,B.fret+3,(ret-B.ret)/16);
     cur.tray=offs.map(function(o){return ret+o;}); render();
     reveal(heatHalo,lens.warm,hP,0.5*k); reveal(heatWave,lens.warm,hP,k); reveal(heatPulse,lens.warm,hP,0.85*k);
     reveal(warmSupply,lens.cool,wP,k);
@@ -4917,20 +4993,35 @@ function mountNbAnim(rootId,scen,statusId){
     if(statusEl)statusEl.textContent=(t/1000).toFixed(1)+'s · '+status;
   }
   T=(scen===1)?24000:18500;
-  var t=0,last=0,holdUntil=0;
+  var t=0,last=0,holdUntil=0,armed=false;
+  // ON-DEMAND SPIKE. The loop idles at the steady state the wizard describes - every readout at its
+  // base temperature, flows running - until the visitor presses the button. One press runs the whole
+  // event once, then the loop settles back to steady state and the button re-arms.
+  var spikeBtn=$('spikeBtn');
+  function setBtn(on){ if(!spikeBtn)return; spikeBtn.style.opacity=on?'1':'0.3';
+    spikeBtn.style.pointerEvents=on?'auto':'none'; }
+  if(spikeBtn)spikeBtn.addEventListener('click',function(){
+    if(armed)return; clearWaves(); t=0; armed=true; setBtn(false); });
   function visible(){ return root.offsetParent!==null; }
   function loop(ts){
     if(!last)last=ts;
     var dt=ts-last; last=ts;
     if(!visible()){ requestAnimationFrame(loop); return; }
     if(!measure()){ requestAnimationFrame(loop); return; }
-    if(holdUntil){ if(ts>=holdUntil){ holdUntil=0; t=0; clearWaves(); } requestAnimationFrame(loop); return; }
+    if(!armed){
+      applyFrame(0);
+      if(statusEl)statusEl.textContent=(scen===1
+        ?'steady state \u2014 press \u26a1 Run electric spike to stress the loop'
+        :'IceBrick armed \u2014 press \u26a1 Run electric spike to watch the interception');
+      requestAnimationFrame(loop); return;
+    }
+    if(holdUntil){ if(ts>=holdUntil){ holdUntil=0; t=0; armed=false; setBtn(true); clearWaves(); } requestAnimationFrame(loop); return; }
     t+=dt;
-    if(t>=T){ applyFrame(T); holdUntil=ts+1600; }
+    if(t>=T){ applyFrame(T); holdUntil=ts+2600; }
     else applyFrame(t);
     requestAnimationFrame(loop);
   }
-  setIce(scen===2); render();
+  setIce(scen===2); render(); setBtn(true);
   requestAnimationFrame(loop);
 }
 mountNbAnim('animA',1,'animA_st');
