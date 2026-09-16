@@ -909,7 +909,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
           <button class="btn" id="b2_reset" style="padding:6px 12px;font-size:12px">Reset zoom</button>
         </div>
         <div class="chartbox" style="position:relative"><canvas id="cB2"></canvas>
-          <div id="b2_unlock" style="position:absolute;left:50%;top:26%;transform:translate(-50%,-50%);pointer-events:none;
+          <div id="b2_unlock" style="position:absolute;left:22%;top:22%;transform:translate(-50%,-50%);pointer-events:none;
             font-weight:800;font-size:15px;letter-spacing:.2px;color:#0284c7;background:rgba(255,255,255,.82);padding:4px 12px;border-radius:6px">Unlocked IT capacity</div></div>
         <div class="legend" id="b2_legend"></div>
         <div class="panrow" id="b2_pan_w" style="display:none;align-items:center;gap:12px;margin-top:8px"><span style="font-size:12px;color:var(--muted);white-space:nowrap">Slide through the year</span><input type="range" id="b2_pan" min="0" max="8759" step="1" style="flex:1"></div>
@@ -1461,7 +1461,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='140';                                           // build — stamped on the masthead and inside every run code
+const VER='141';                                           // build — stamped on the masthead and inside every run code
 // FINANCIAL ASSUMPTIONS (v139). Two planning rates the results page and the PDF quote alongside the
 // engineering numbers. They are assumptions, not outputs: editable on the results page, not part of the
 // run ID, and every figure they touch says so. Revenue per MW-yr of leasable IT capacity, and installed
@@ -4781,8 +4781,8 @@ async function buildPDF(){
     { const y0=y; chart(shots.cB2,250);
       // the unlocked band sits between the grey ghost and the red line; name it on the page
       const cw=CW, chh=Math.min(250,cw*shots.cB2.h/shots.cB2.w);
-      doc.setFillColor(255,255,255); doc.roundedRect(M+cw*0.5-62,y0+chh*0.22-9,124,16,3,3,'F');
-      setF(10,'bold',ACC); T('Unlocked IT capacity',M+cw*0.5,y0+chh*0.22+3,{align:'center'}); }
+      doc.setFillColor(255,255,255); doc.roundedRect(M+cw*0.22-62,y0+chh*0.2-9,124,16,3,3,'F');
+      setF(10,'bold',ACC); T('Unlocked IT capacity',M+cw*0.22,y0+chh*0.2+3,{align:'center'}); }
     legend(legs.b2_legend);
     para(D.b2Note);
 
