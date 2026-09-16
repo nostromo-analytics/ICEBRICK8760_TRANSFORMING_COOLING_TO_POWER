@@ -233,7 +233,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend .lgi{cursor:pointer;user-select:none}
 .legend .lgi:hover{color:var(--text)}
-.legend .lgi.off{opacity:.4;text-decoration:line-through}
+.legend .lgi.off{color:var(--muted);opacity:.7}
+.legend .lgi.off .swatch{background:#b8c2cc!important;border-top-color:#b8c2cc!important}
 .swatch{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
 .swatch.dash{width:16px;height:0;border-radius:0;border-top:3px dashed currentColor;background:none;
   align-self:center;margin-bottom:1px}
@@ -1258,11 +1259,11 @@ function wxrHas(key){ return !!(WXR&&WXR.hubs&&WXR.hubs[key]); }
 function wxrYear(key){
   const ck='y:'+key; if(wxrC[ck])return wxrC[ck];
   const h=WXR.hubs[key]; if(!h)return null;
-  const T=wxrUnpack(h.T), Td=wxrUnpack(h.Td);
+  const T=wxrUnpack(h.T), Td=wxrUnpack(h.Td), WBp=(h.WB?wxrUnpack(h.WB):null);
   if(T.length!==8760)return null;
   const hrs=[]; let peak=-99, peakIdx=0;
   for(let i=0;i<8760;i++){
-    const t=T[i], WB=wetBulb(t,RHfromTd(t,Td[i]));
+    const t=T[i], WB=(WBp&&WBp.length===8760)?WBp[i]:wetBulb(t,RHfromTd(t,Td[i]));
     hrs.push({T:t,WB:WB,m:mOf(i),hh:i%24});
     if(t>peak){peak=t;peakIdx=i;}
   }
@@ -1281,7 +1282,7 @@ function wxrDesign(key,N){
   if(!best)return null;
   const mo=+best.date.slice(5,7)-1, dayN=+best.date.slice(8,10);
   const off=(best.T.length>=72?24:0);
-  const block=best.T.map((t,i)=>({T:t,WB:wetBulb(t,RHfromTd(t,best.Td[i])),m:mo,hh:i%24}));
+  const block=best.T.map((t,i)=>({T:t,WB:(best.WB&&best.WB.length===best.T.length)?best.WB[i]:wetBulb(t,RHfromTd(t,best.Td[i])),m:mo,hh:i%24}));
   const designDay=block.slice(off,off+24);
   const dayExt=block.slice(Math.max(0,off-5),off+24);
   let pk=-99,pkH=designDay[0]; designDay.forEach(o=>{if(o.T>pk){pk=o.T;pkH=o;}});
@@ -1461,7 +1462,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='141';                                           // build — stamped on the masthead and inside every run code
+const VER='142';                                           // build — stamped on the masthead and inside every run code
 // FINANCIAL ASSUMPTIONS (v139). Two planning rates the results page and the PDF quote alongside the
 // engineering numbers. They are assumptions, not outputs: editable on the results page, not part of the
 // run ID, and every figure they touch says so. Revenue per MW-yr of leasable IT capacity, and installed
@@ -2303,7 +2304,7 @@ function runDesignDayIce(p,N,st){
   const lc=carry ? levelDay(ext,pH.FWS,pH,st.target,O.chargedAt(st.target),st.S1*st.mult,st.S1*st.mult)
                  : levelDay(ext,pH.FWS,pH);
   const carriedIn=carry ? Math.max(0,lc.disTh.reduce((a,b)=>a+b,0)*CHG_LOSS-lc.chargedTh) : 0;
-  const base=[],ice=[],chg=[],dis=[],amb=[],labels=[],baseC=[],iceC=[],hiC=[];
+  const base=[],ice=[],chg=[],dis=[],amb=[],wb=[],labels=[],baseC=[],iceC=[],hiC=[];
   const chgRaw=[],chgEff=[],disRaw=[],disEff=[],xB=[],xA=[];
   // COMPRESSOR DUTY IN kWth, BEFORE AND AFTER, ALONGSIDE THE ELECTRIC. Chillers are bought in tons of
   // refrigeration, so anything that says "you would not have needed these machines" has to be argued in
@@ -2340,12 +2341,12 @@ function runDesignDayIce(p,N,st){
                 dis.push(0); disRaw.push(0); disEff.push(0); }
     else      { dis.push(elMW);  disRaw.push(Math.min(rawMW,elMW));   disEff.push(effMW);
                 chg.push(0); chgRaw.push(0); chgEff.push(0); }
-    amb.push(o.T);
+    amb.push(o.T); wb.push(o.WB);
     labels.push(i<ext.length-24 ? String(o.hh).padStart(2,'0')+':00⁻¹' : String(o.hh).padStart(2,'0')+':00');
   });
   // The work point at the hour the plant is working hardest — before the Storage, and after it.
   const hPk=base.indexOf(Math.max(...base));
-  return {dn,base,ice,chg,dis,chgRaw,chgEff,disRaw,disEff,amb,labels,baseC,iceC,hiC,baseTh,iceTh,chargedTh:lc.chargedTh,carriedIn,base0:itMW+ohMW,
+  return {dn,base,ice,chg,dis,chgRaw,chgEff,disRaw,disEff,amb,wb,labels,baseC,iceC,hiC,baseTh,iceTh,chargedTh:lc.chargedTh,carriedIn,base0:itMW+ohMW,
     chgThX:lc.chgTh.slice(), disThX:lc.disTh.slice(),
     xPk0:xB[hPk], xPk1:xA[hPk], xLo:Math.min(...xA),
     pkT:Math.max(...base)/itMW, pkI:Math.max(...ice)/itMW, chillPk:Math.max(...baseC),
@@ -3180,6 +3181,8 @@ function drawYear(){
     borderWidth:.7,pointRadius:0,fill:false,tension:0,yAxisID:'y2',order:1});
   ds.push({label:'Ambient dry-bulb',data:b.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',
     borderWidth:1,pointRadius:0,fill:false,tension:0,yAxisID:'y3',order:0});
+  ds.push({label:'Wet-bulb',data:b.wb.map(cvT),borderColor:c.wb,backgroundColor:'transparent',
+    borderWidth:1,pointRadius:0,fill:false,tension:0,yAxisID:'y3',order:0,borderDash:[4,3]});
   // THE PEAK PUE EVENT, MARKED. One hour of the year sizes the chillers, the feeders and the
   // utility contract; it gets a red dot, not a caption. Own stack group so the stacked scale
   // does not lift it off its true value.
@@ -3204,7 +3207,7 @@ function drawYear(){
   $('cYear').ondblclick=()=>chYear&&chYear.resetZoom();
   const items=st.map(([lb,,col],i)=>({lb,col,i}))
     .concat([{lb:'Water use (right axis)',col:c.water,i:nW},{lb:'Ambient dry-bulb (right axis)',col:c.amb,i:nW+1},
-             {lb:'Peak PUE event',col:'#e02020',i:nW+2}]);
+             {lb:'Wet-bulb (right axis)',col:c.wb,i:nW+2,dash:true},{lb:'Peak PUE event',col:'#e02020',i:nW+3}]);
   buildLegend($('y_legend'),chYear,items);
   applyRight();
   const f=fmtInt;
@@ -3219,14 +3222,15 @@ function drawYear(){
 function applyRight(){
   if(!chYear)return;
   const wOn=(yRight==='water'||yRight==='both'), aOn=(yRight==='amb'||yRight==='both');
-  const n=chYear.data.datasets.length;
+  const n=chYear.data.datasets.length;   // ... water, ambient, wet-bulb, peak dot
   chYear.options.scales.y2.display=wOn;
   chYear.options.scales.y3.display=aOn;
-  chYear.setDatasetVisibility(n-2,wOn);
-  chYear.setDatasetVisibility(n-1,aOn);
+  chYear.setDatasetVisibility(n-4,wOn);
+  chYear.setDatasetVisibility(n-3,aOn);
+  chYear.setDatasetVisibility(n-2,aOn);
   chYear.update();
   $('y_legend').querySelectorAll('.lgi').forEach(sp=>{
-    const i=+sp.dataset.i; if(i===n-2)sp.classList.toggle('off',!wOn); if(i===n-1)sp.classList.toggle('off',!aOn);});
+    const i=+sp.dataset.i; if(i===n-4)sp.classList.toggle('off',!wOn); if(i===n-3||i===n-2)sp.classList.toggle('off',!aOn);});
 }
 $('y_right').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   yRight=b.dataset.r; [...$('y_right').children].forEach(x=>x.classList.toggle('on',x===b)); applyRight();});
@@ -3986,18 +3990,20 @@ function drawB1(){
     {label:'Peak today',data:peakLine,borderColor:c.mech,backgroundColor:'transparent',borderWidth:1.3,pointRadius:0,fill:false,borderDash:[7,4],tension:0,order:0},
     {label:'Facility demand',data:b.fac,borderColor:c.chiller,backgroundColor:'transparent',borderWidth:.9,pointRadius:0,fill:false,tension:0,order:1},
     {label:'Ambient dry-bulb',data:b.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,fill:false,tension:0,order:4,yAxisID:'y3',hidden:true},
+    {label:'Wet-bulb',data:b.wb.map(cvT),borderColor:c.wb,backgroundColor:'transparent',borderWidth:1.1,pointRadius:0,fill:false,tension:0,order:4,yAxisID:'y3',hidden:true,borderDash:[4,3]},
     (function(){const d=new Array(8760).fill(null); d[b.peakIdx]=b.pkFac;
       return {label:'Peak PUE event',data:d,showLine:false,pointRadius:5,pointHoverRadius:7,
         pointBackgroundColor:'#e02020',pointBorderColor:'#ffffff',pointBorderWidth:1.5,fill:false,order:0};})()
   ].concat(wetB1?[{label:'Water use',data:b.wat.map(wConv),borderColor:c.water,backgroundColor:'transparent',
       borderWidth:1.3,pointRadius:0,fill:false,tension:0,order:5,yAxisID:'yw'}]:[])
-  },options:o1,plugins:[{id:'nbY3vis',beforeLayout:ch=>{ch.options.scales.y3.display=ch.isDatasetVisible(2);}}]});
+  },options:o1,plugins:[{id:'nbY3vis',beforeLayout:ch=>{ch.options.scales.y3.display=ch.isDatasetVisible(2)||ch.isDatasetVisible(3);}}]});
   $('cB1').ondblclick=resetBoth;
   buildLegend($('b1_legend'),chB1,[{lb:'Peak today — '+b.pkFac.toFixed(2)+' MW',col:c.mech,i:0,dash:true},
     {lb:'Facility demand \u2014 the spikes you see are the mechanical cooling; the right axis reads them directly',col:c.chiller,i:1},
     {lb:'Ambient dry-bulb (right axis)',col:c.amb,i:2},
-    {lb:'Peak PUE event',col:'#e02020',i:3}]
-    .concat(wetB1?[{lb:'Water use (right axis)',col:c.water,i:4}]:[]));
+    {lb:'Wet-bulb (right axis)',col:c.wb,i:3,dash:true},
+    {lb:'Peak PUE event',col:'#e02020',i:4}]
+    .concat(wetB1?[{lb:'Water use (right axis)',col:c.water,i:5}]:[]));
 }
 function drawB2(){
   if(typeof Chart==='undefined'||!R.st)return;
@@ -4211,7 +4217,8 @@ function drawND(){
     {label:'IceBrick discharging',data:d.disRaw,borderColor:c.disB,backgroundColor:c.disB,borderWidth:0,pointRadius:0,fill:'origin',tension:.2,order:4},
     {label:'Chiller efficiency gained (charging)',data:d.chg,borderColor:c.wpB,backgroundColor:c.wpB,borderWidth:0,pointRadius:0,fill:'origin',tension:.2,order:6},
     {label:'Chiller efficiency gained (discharging)',data:d.dis,borderColor:c.wpB,backgroundColor:c.wpB,borderWidth:0,pointRadius:0,fill:'origin',tension:.2,order:6},
-    {label:'Ambient dry-bulb',data:d.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.6,pointRadius:0,fill:false,tension:.3,yAxisID:'y3',order:0}
+    {label:'Ambient dry-bulb',data:d.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.6,pointRadius:0,fill:false,tension:.3,yAxisID:'y3',order:0},
+    {label:'Wet-bulb',data:d.wb.map(cvT),borderColor:c.wb,backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,fill:false,tension:.3,yAxisID:'y3',order:0,borderDash:[4,3]}
   ]:[
     {label:'IT + ancillary base',data:fBase,borderColor:c.ghost,backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,fill:false,borderDash:[5,4],tension:0,order:5},
     {label:'Facility demand — before',data:d.base,borderColor:c.chiller,backgroundColor:'transparent',borderWidth:2,pointRadius:0,fill:false,tension:.25,borderDash:[4,3],order:1},
@@ -4220,7 +4227,8 @@ function drawND(){
     {label:'IceBrick discharging',data:disUpR,borderColor:c.disB,backgroundColor:c.disB,borderWidth:0,pointRadius:0,fill:'origin',tension:.2,order:4,_off:f0},
     {label:'Chiller efficiency gained (charging)',data:chgUp,borderColor:c.wpB,backgroundColor:c.wpB,borderWidth:0,pointRadius:0,fill:'origin',tension:.2,order:6,_off:f0},
     {label:'Chiller efficiency gained (discharging)',data:disUp,borderColor:c.wpB,backgroundColor:c.wpB,borderWidth:0,pointRadius:0,fill:'origin',tension:.2,order:6,_off:f0},
-    {label:'Ambient dry-bulb',data:d.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.6,pointRadius:0,fill:false,tension:.3,yAxisID:'y3',order:0}
+    {label:'Ambient dry-bulb',data:d.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.6,pointRadius:0,fill:false,tension:.3,yAxisID:'y3',order:0},
+    {label:'Wet-bulb',data:d.wb.map(cvT),borderColor:c.wb,backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,fill:false,tension:.3,yAxisID:'y3',order:0,borderDash:[4,3]}
   ];
   chND=new Chart($('cND'),{type:'line',data:{labels:d.labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,animation:false,
@@ -4244,12 +4252,12 @@ function drawND(){
     {lb:'Cooling electric — with IceBrick',col:c.mech,i:2},{lb:'IceBrick charging',col:c.chgB,i:3},
     {lb:'IceBrick discharging',col:c.disB,i:4},
     {lb:'Chiller efficiency \u2014 post-cooling lift + work point',col:c.wpB,i:[5,6]},
-    {lb:'Ambient dry-bulb (right axis)',col:c.amb,i:7}]:[
+    {lb:'Ambient dry-bulb (right axis)',col:c.amb,i:7},{lb:'Wet-bulb (right axis)',col:c.wb,i:8,dash:true}]:[
     {lb:'IT + ancillary base \u2014 '+d.base0.toFixed(2)+' MW',col:c.ghost,i:0,dash:true},
     {lb:'Facility demand — before',col:c.chiller,i:1,dash:true},{lb:'Facility demand — with IceBrick',col:c.chiller,i:2},
     {lb:'IceBrick charging',col:c.chgB,i:3},{lb:'IceBrick discharging',col:c.disB,i:4},
     {lb:'Chiller efficiency \u2014 post-cooling lift + work point',col:c.wpB,i:[5,6]},
-    {lb:'Ambient dry-bulb (right axis)',col:c.amb,i:7}];
+    {lb:'Ambient dry-bulb (right axis)',col:c.amb,i:7},{lb:'Wet-bulb (right axis)',col:c.wb,i:8,dash:true}];
   buildLegend($('nd_legend'),chND,items);
 }
 $('ndmode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
@@ -4416,7 +4424,7 @@ async function buildPDF(){
   // ambient; the weather testifies only in the five-day closeup, where an orange line means something.
   let b1AmbWas=null;
   if(typeof chB1!=='undefined'&&chB1&&chB1.data.datasets.length>2){
-    b1AmbWas=chB1.isDatasetVisible(2);
+    b1AmbWas=chB1.isDatasetVisible(2); var b1WbWas=chB1.isDatasetVisible(3);
     chB1.setDatasetVisibility(2,false); chB1.update('none');
     await sleep(40);
   }
@@ -4440,11 +4448,11 @@ async function buildPDF(){
     let d0=Math.max(0,Math.min(360,Math.floor(pk/24)-2));
     const a=d0*24, z=a+120-1;
     [chB1,chB2].forEach(ch=>{ch.options.scales.x.min=a; ch.options.scales.x.max=z; ch.update('none');});
-    if(chB1.data.datasets.length>2){ chB1.setDatasetVisibility(2,true); chB1.update('none'); }
+    if(chB1.data.datasets.length>3){ chB1.setDatasetVisibility(2,true); chB1.setDatasetVisibility(3,true); chB1.update('none'); }
     await sleep(80);
     shots.cB1z=pSnap('cB1'); shots.cB2z=pSnap('cB2');
     [chB1,chB2].forEach(ch=>{delete ch.options.scales.x.min; delete ch.options.scales.x.max; ch.update('none');});
-    if(chB1.data.datasets.length>2){ chB1.setDatasetVisibility(2,b1AmbWas===true); chB1.update('none'); }
+    if(chB1.data.datasets.length>3){ chB1.setDatasetVisibility(2,b1AmbWas===true); chB1.setDatasetVisibility(3,b1WbWas===true); chB1.update('none'); }
     zWin={a,z,pk};
   }
   // legends to match: the full-year page drops the switched-off ambient entry entirely,
