@@ -267,6 +267,21 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 .deltab .dl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .deltab .dv{font-family:var(--mono);font-size:19px;font-weight:600;color:var(--water);margin-top:3px}
 .deltab .ds{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:3px}
+/* v145 speed to power */
+.kpi .k-num .u{font-size:13px;color:var(--muted);margin-left:6px;font-weight:500}
+.marks{position:relative;height:38px;margin-top:2px}.marks.tall{height:74px}
+.mk{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-size:11px;line-height:1.2;color:var(--muted);cursor:pointer;white-space:nowrap}
+.mk i{display:block;width:2px;height:10px;margin:0 auto 2px;background:var(--muted)}
+.mk.knee{color:var(--chiller)}.mk.knee i{background:var(--chiller)}
+.mk.night{color:var(--ice)}.mk.night i{background:var(--ice)}
+.mk.full{color:var(--text)}.mk.full i{background:var(--text)}
+.mk.no{color:#b45309}.mk.no i{background:#b45309}
+.mk.lo{top:36px}.mk.lo i{height:46px;margin-top:-36px}
+.mk.r{transform:translateX(-100%);text-align:right}.mk.r i{margin-right:0}.mk.l{transform:none;text-align:left}.mk.l i{margin-left:0}
+.s2tip{position:absolute;display:none;pointer-events:none;background:#111827;color:#fff;font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.legend .swatch.line{height:3px;border-radius:2px;width:16px}
+.modecard{padding:22px 22px}.modecard .on1{font-size:19px;font-weight:700;margin-bottom:8px}.modecard .on2{font-size:13px;line-height:1.5}
+
 .ftr{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:44px;
   border-top:1px solid var(--line);padding-top:24px;color:var(--faint);font-size:11.5px;
   font-family:var(--mono);flex-wrap:wrap}
@@ -359,8 +374,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     <div class="wizdots" id="wizdots"></div>
 
     <!-- Q1 — location -->
-    <div class="qstep on" data-q="0">
-      <div class="qnum">Question 1 of 7</div>
+    <div class="qstep" data-q="1">
+      <div class="qnum">Question 2 of 8</div>
       <div class="qtitle">Where does your data center live?</div>
       <p class="qhelp">Aside from compute, weather is the single biggest driver of cooling cost. Click the hub closest to your site —
         we will synthesize 50 years of hourly dry-bulb and wet-bulb from that location's climate normals.</p>
@@ -373,8 +388,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     </div>
 
     <!-- Q2 — size -->
-    <div class="qstep" data-q="1">
-      <div class="qnum">Question 2 of 7</div>
+    <div class="qstep" data-q="2">
+      <div class="qnum">Question 3 of 8</div>
       <div class="qtitle">Name Your Power Envelope</div>
       <p class="qhelp">Every project starts from one of two numbers — the substation connection you were offered,
         or the IT nameplate you want to install. Type yours into its box and continue from that box: the other
@@ -418,8 +433,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       </div>
     </div>
     <!-- Q3 — cascade -->
-    <div class="qstep" data-q="2">
-      <div class="qnum">Question 3 of 7</div>
+    <div class="qstep" data-q="3">
+      <div class="qnum">Question 4 of 8</div>
       <div class="qtitle">How do you reject that heat today?</div>
       <p class="qhelp">Pick the cooling cascade that matches your plant. This decides how much of the year is free,
         how much runs on water, and how much lands on a compressor.</p>
@@ -438,13 +453,19 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
             <span class="on2">The full toolkit: night wet free-cooling digs charging room, condenser fog defends the
               hot afternoons. Recommended for new installs.</span></div>
         </div>
-        <p class="qhelp" style="margin:14px 0 10px">Adiabatic systems can be dispatched for two different goals — choose
+        <p class="qhelp" style="margin:14px 0 10px">Adiabatic systems can be dispatched for three different goals — choose
           what IceBrick should optimise on this site:</p>
-        <div class="optgrid g2" id="wmgrid">
+        <div class="optgrid g3" id="wmgrid">
           <div class="opt sel" data-w="power"><span class="on1">Power optimisation</span>
             <span class="on2">Dynamic setpoint: no fixed spray trigger — the pads are dispatched hour by hour, together
               with the ice, wherever they buy the most peak and PUE. Annual water is held at or below what your
               plant's own fixed trigger spends today.</span></div>
+          <div class="opt" data-w="night"><span class="on1">Night-fogging</span>
+            <span class="on2">The pads run at night on the dry coolers to their full depth, opening compressors-off
+              charging room, and by day on the condensers. The only water rule is a cap on the change in site
+              WUE: <input type="number" id="i_nfcap" min="0" max="5" step="0.05" value="0.5"
+              style="width:58px;font-family:var(--mono);font-size:12px;padding:2px 5px;border:1px solid var(--line);border-radius:5px;background:var(--panel2);color:var(--text)"
+              onclick="event.stopPropagation()"> L/kWh added over the plant's water today.</span></div>
           <div class="opt" data-w="water"><span class="on1">Water optimisation</span>
             <span class="on2">Pads stay dry: the ceiling is pinned at today's peak, every spare megawatt beneath it
               charges ice, and the banked ice carries the hot hours. The pads spray only where even a full
@@ -454,8 +475,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     </div>
 
     <!-- Q4 — temperatures -->
-    <div class="qstep" data-q="3">
-      <div class="qnum">Question 4 of 7</div>
+    <div class="qstep" data-q="4">
+      <div class="qnum">Question 5 of 8</div>
       <div class="qtitle">Is your data hall air-cooled or liquid-cooled?</div>
       <p class="qhelp">This decides what the next question even means. A liquid hall has a CDU between your facility
         loop and the chips, and the temperature that matters is the one the cold plates are promised. An air hall has
@@ -465,8 +486,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     </div>
 
     <!-- Q5 — temperatures -->
-    <div class="qstep" data-q="4">
-      <div class="qnum">Question 5 of 7</div>
+    <div class="qstep" data-q="5">
+      <div class="qnum">Question 6 of 8</div>
       <div class="qtitle" id="q5title">What water do your racks actually get?</div>
       <p class="qhelp" id="q5help">Your IT does not see facility water &mdash; it sees whatever comes out of the CDU, one heat
         exchanger later. So we ask for the number your racks are promised and the step the CDU adds — the SLA ceiling
@@ -601,9 +622,54 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       </div>
     </div>
 
-    <!-- Q6 — go higher, with the IceBrick tie-in playing -->
-    <div class="qstep" data-q="5">
-      <div class="qnum">Question 6 of 7</div>
+    <!-- Q6 (v145) — THE FORK. Facility characteristics are set; now say what the run is for. -->
+    <div class="qstep on" data-q="0">
+      <div class="qnum">Question 1 of 8</div>
+      <div class="qtitle">What is this run for?</div>
+      <p class="qhelp">This simulator runs two distinct advanced thermal-management methodologies, for two separate
+        use cases. The IceBrick system can be deployed as a means of <b>acquiring power flexibility</b> &mdash; a firm
+        curtailment you commit to the grid for a demand-response event &mdash; or to <b>optimize your power envelope</b>
+        &mdash; more IT behind the connection you already own, every hour of the year. Pick the use case; the questions
+        that follow describe your plant, and the same weather, the same chiller and the same 8,760-hour baseline serve
+        either one.</p>
+      <div class="optgrid g2">
+        <div class="opt big modecard" id="mode_s2p">
+          <span class="on1">Speed to Power &mdash; acquire power flexibility</span>
+          <span class="on2">Size IceBrick to the night before an event and commit a firm curtailment for a
+            demand-response window &mdash; the number you can put in a utility contract, on the day the grid
+            actually peaked.</span>
+        </div>
+        <div class="opt big modecard sel" id="mode_pe">
+          <span class="on1">Power Envelope Optimization</span>
+          <span class="on2">Size IceBrick to shave every design-week peak, unlock IT capacity under the same
+            connection, and report PUE, water and the freed megawatts hour by hour.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q7 (v145, Speed to Power only) — the event -->
+    <div class="qstep" data-q="6">
+      <div class="qnum">Question 7 of 8</div>
+      <div class="qtitle">The demand-response event</div>
+      <p class="qhelp">Utility calls are usually 13:00&ndash;19:00 and run four hours. The store is sized to what the
+        night before can freeze under your own operational limit; the grid picks which ten hours of the year we
+        show you first.</p>
+      <div class="slrow" style="margin-top:8px">
+        <div class="sl"><label>Event start <span class="val" id="s2w_vstart">14:00</span></label>
+          <input type="range" id="s2w_istart" min="6" max="20" step="1" value="14">
+          <div class="hint">hour the window opens &middot; discharge ramps up over the 7 minutes before it</div></div>
+        <div class="sl"><label>Event duration <span class="val" id="s2w_vdur">4 h</span></label>
+          <input type="range" id="s2w_idur" min="1" max="8" step="1" value="4">
+          <div class="hint">preset 4 h &middot; adjustable 1&ndash;8 h</div></div>
+        <div class="sl"><label>Grid &middot; coincident peaks <span class="val" id="s2w_vgrid"></span></label>
+          <select id="s2w_igrid" class="txtin" style="width:100%;padding:9px 12px;font-family:var(--mono);font-size:13px"></select>
+          <div class="hint">the site's default grid is preselected &middot; official 2025 peak hours where published, the site's hottest days otherwise</div></div>
+      </div>
+    </div>
+
+    <!-- Q8 — go higher, with the IceBrick tie-in playing (Power Envelope only) -->
+    <div class="qstep" data-q="7">
+      <div class="qnum">Question 7 of 8</div>
       <div class="qtitle">Go higher</div>
       <p class="qhelp">The same loop with <b>IceBrick tied in at the CDU</b>. Watch the same spike again: the DCIM sees it
         the moment it starts, IceBrick is dispatched, and the cold wave reaches the CDU HX ahead of the heat — the hall
@@ -643,8 +709,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
     <!-- Q7 — overhead -->
     <!-- Q6 — confirm -->
-    <div class="qstep" data-q="6">
-      <div class="qnum">Question 7 of 7</div>
+    <div class="qstep" data-q="8">
+      <div class="qnum">Question 8 of 8</div>
       <div class="qtitle">One last look before we run the year</div>
       <p class="qhelp">This is the baseline operating matrix we will simulate. Change anything you like — you can also
         come back and re-run with different answers at any time.</p>
@@ -750,6 +816,62 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       </div>
     </div>
     <div class="hint" id="res_wathint" style="margin-top:4px"></div>
+  </div>
+
+  <!-- ==================== SPEED TO POWER (v145) ==================== -->
+  <div id="v_s2p" style="display:none;margin-top:20px">
+    <div class="panel">
+      <div class="chead"><div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">The event &mdash; every number below re-solves in place</h3>
+        <div class="ctag">Window, grid and store size. The baseline year is already run; only the event and the night before are priced again.</div></div></div>
+      <div class="slrow" style="margin-top:14px">
+        <div class="sl"><label>Event start <span class="val" id="s2_vstart">14:00</span></label><input type="range" id="s2_istart" min="6" max="20" step="1" value="14"></div>
+        <div class="sl"><label>Event duration <span class="val" id="s2_vdur">4 h</span></label><input type="range" id="s2_idur" min="1" max="8" step="1" value="4"></div>
+        <div class="sl"><label>Grid &middot; coincident peaks</label><select id="s2_igrid" class="txtin" style="width:100%;padding:8px 12px;font-family:var(--mono);font-size:13px"></select></div>
+      </div>
+      <div class="sl" style="margin-top:10px"><label>IceBrick storage <span class="val" id="s2_vstor">&mdash;</span></label>
+        <input type="range" id="s2_istor" min="0" max="1000" step="100" value="500">
+        <div class="marks" id="s2_marks"></div>
+        <div class="hint" id="s2_hstor">&mdash;</div></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="chead"><div><h3 class="ctitle">The year, and the hours the grid actually peaked</h3><div class="ctag" id="s2_ytag"></div></div>
+        <button class="btn ghost" id="s2_yreset" style="padding:6px 12px;font-size:12px">Reset zoom</button></div>
+      <div class="chartbox" style="height:300px"><canvas id="s2_cy"></canvas></div>
+      <div class="legend" id="s2_ylg"></div>
+      <div class="note" id="s2_ynote"></div>
+    </div>
+
+    <div class="deltab" style="margin-top:16px">
+      <div class="d"><div class="dl">Peak-hour reduction</div><div class="dv" id="s2_pk">&mdash;</div><div class="ds" id="s2_pk_s"></div>
+        <div class="ds" style="margin-top:6px"><b id="s2_dir">&mdash;</b> displaced by the ice at the peak kW/ton</div>
+        <div class="ds"><b id="s2_bon">&mdash;</b> bonus on the remaining chillers <span id="s2_bon_s"></span></div></div>
+      <div class="d"><div class="dl">Peak kW/ton used</div><div class="dv" id="s2_kwt">&mdash;</div><div class="ds" id="s2_kwt_s"></div></div>
+      <div class="d"><div class="dl">Charging plant to refill overnight</div><div class="dv" id="s2_chg">&mdash;</div><div class="ds" id="s2_chg_s"></div></div>
+      <div class="d"><div class="dl">Storage per kW committed</div><div class="dv" id="s2_ratio">&mdash;</div><div class="ds" id="s2_ratio_s"></div></div>
+      <div class="d" id="s2_h2o_t" style="display:none"><div class="dl">Water in the event &middot; adiabatic pads</div><div class="dv" id="s2_h2o">&mdash;</div><div class="ds" id="s2_h2o_s"></div></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="chead"><div><h3 class="ctitle" id="s2_dtitle">Design day with the event</h3><div class="ctag" id="s2_ctag"></div></div>
+        <button class="btn ghost" id="s2_back" style="display:none;padding:6px 12px;font-size:12px">Back to the typical DR day</button></div>
+      <div class="chartbox"><canvas id="s2_cv"></canvas></div>
+      <div class="legend" id="s2_lg"></div>
+      <div class="note" id="s2_note"></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="chead"><div><h3 class="ctitle">How much store is worth buying</h3><div class="ctag" id="s2_stag"></div></div></div>
+      <div class="chartbox" style="height:260px"><canvas id="s2_cs"></canvas></div>
+      <div class="note" id="s2_snote"></div>
+    </div>
+
+    <div class="hero h4" style="margin-top:16px">
+      <div class="kpi savings"><div class="k-label">Committed curtailment &middot; firm</div><div class="k-num" id="s2_firm">&mdash;</div><div class="k-sub" id="s2_firm_s"></div></div>
+      <div class="kpi"><div class="k-label">Energy shed per event</div><div class="k-num" id="s2_mwh">&mdash;</div><div class="k-sub" id="s2_mwh_s"></div></div>
+      <div class="kpi"><div class="k-label">IceBrick storage</div><div class="k-num" id="s2_stor">&mdash;</div><div class="k-sub" id="s2_stor_s"></div></div>
+      <div class="kpi"><div class="k-label">Li-ion equivalent</div><div class="k-num" id="s2_li">&mdash;</div><div class="k-sub" id="s2_li_s"></div></div>
+    </div>
   </div>
 
   <!-- ACT 1 — the 8760 -->
@@ -1462,7 +1584,11 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='142';                                           // build — stamped on the masthead and inside every run code
+const VER='155';
+// v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
+// stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
+// water over total annual IT kWh - set by the operator. Default cap below.
+const NF_CAP_DEFAULT=0.5;                                           // build — stamped on the masthead and inside every run code
 // FINANCIAL ASSUMPTIONS (v139). Two planning rates the results page and the PDF quote alongside the
 // engineering numbers. They are assumptions, not outputs: editable on the results page, not part of the
 // run ID, and every figure they touch says so. Revenue per MW-yr of leasable IT capacity, and installed
@@ -1507,7 +1633,8 @@ function waterLitres(o,FWS,p,fChillOverride){
 const S={units:'metric',theme:'light'};
 const W={hub:'nova',IT:100,hc:1.0,chS:23,chE:10,cascade:1,hall:'liquid',RS:30,RSmax:35,FWS:26,FWShi:26,cduap:4,oh:0.10,N:20,mult:1,hdr:0,hdT:90,gc:0,pePct:80,peMode:'it',wmode:'power',pads:'both'};
 function P(){return {IT_kW:W.IT*1000, hc:W.hc, FWS:W.FWS, FWShi:Math.max(W.FWShi,W.FWS),
-  wmode:(W.cascade===2?(W.wmode||'power'):'power'),
+  wmode:(W.cascade===2?((W.wmode||'power')==='night'?'power':(W.wmode||'power')):'power'),
+  nf:(W.cascade===2&&W.wmode==='night'), nfCap:(W.nfCap!=null?W.nfCap:NF_CAP_DEFAULT),
   pads:(W.cascade===2?(W.pads||'both'):'both'),
   cduap:W.cduap, cascade:W.cascade, oh:W.oh, hdr:W.hdr||0};}
 // TWO WORLDS, ONE PLANT. The "before" case runs at the supply temperature the site holds today.
@@ -2378,9 +2505,11 @@ function computeIce(){
   //  past that allowance, the ceiling retreats until the trade passes - ambition is bounded by
   //  the freed capacity's own WUE, never by the incumbent's habits.
   if(R.p.cascade===2&&R.p.wmode!=='water'&&R.p.pads!=='cond'){
-    const WUE_REF=0.4;
+    const WUE_REF=0.4, NF=!!R.p.nf, NFC=(R.p.nfCap!=null?R.p.nfCap:NF_CAP_DEFAULT);
     const gov=x=>{const un=Math.max(0,R.base.pkFac-Math.max(...x.iceFac));
-      const allow=WUE_REF*un*8760*1000;                 // L/yr the unlocked MW may spend
+      // power mode: the unlocked MW pay for the water at the CNDCP intensity.
+      // night-fogging: the whole site may add at most NFC L/kWh of IT energy - a cap on delta-WUE.
+      const allow=NF ? NFC*R.base.itE*1000 : WUE_REF*un*8760*1000;
       const added=Math.max(0,x.waterI-R.base.water);    // L/yr beyond the legacy bill
       return {ok:added<=allow+1,un,added,allow};};
     let g=gov(R.st);
@@ -2399,8 +2528,21 @@ function computeIce(){
       } else {
         const r=ev(0.98); R.st=r.st2; g=r.g2; R.st.wueRelaxed=0.98;
       }
+      // v143 NEVER WORSE THAN NO TRENCH. Retreating the ceiling to pay for the trench's water can
+      // land above the ceiling the same site reaches with the trench closed - the condenser-only
+      // dispatch, which never spends past the legacy bill and therefore always passes the allowance.
+      // A dry climate (Las Vegas) does exactly this: nights open the trench wide, the water to fill
+      // it dwarfs the allowance, and the retreat gives back nearly everything. So run the no-trench
+      // plan and keep whichever ceiling is lower; the trench is a tool, not an obligation.
+      try{
+        const pC=Object.assign({},R.p,{pads:'cond'});
+        const stC=runStorage(pC,R.base,W.N);
+        if(stC&&isFinite(stC.pkMW)&&stC.pkMW<R.st.pkMW-1e-6){
+          const gC=gov(stC); R.st=stC; g=gC; R.st.wueRelaxed=1; R.st.wueFallback='no-trench';
+        }
+      }catch(e){}
     }
-    R.st.wueOK=g.ok; R.st.wueAdded=g.added; R.st.wueAllow=g.allow; R.st.wueRef=WUE_REF;
+    R.st.wueOK=g.ok; R.st.wueAdded=g.added; R.st.wueAllow=g.allow; R.st.wueRef=NF?null:WUE_REF; R.st.nfCap=NF?NFC:null; R.st.dWue=g.added/(R.base.itE*1000);
   }
   R.ddi=runDesignDayIce(R.p,W.N,R.st);
   // The curve is invariant to the IceBrick array; it only has to be rebuilt when the site, the plant or the
@@ -2570,7 +2712,372 @@ $('units').addEventListener('click',e=>{
 // ============================================================================
 //  WIZARD
 // ============================================================================
-let STEP=0; const NSTEP=7;
+
+// ============================================================================
+//  SPEED TO POWER (v145). The second branch after the facility characteristics: instead of
+//  optimising the power envelope for the year, commit a firm curtailment to the grid for a
+//  demand-response event. Same baseline run, same chiller, same weather. The store is sized
+//  by the night before; the event is priced on the engine's own part-load curve and lift.
+//  Everything below is one module with a single entry point, S2P.show(), so the rest of the
+//  engine only needs the fork, the ID token and the results switch.
+// ============================================================================
+const S2P=(()=>{
+  const GRIDS={
+    'PJM':{name:'PJM · 5CP',off:[[6,23,17],[6,24,17],[7,29,17],[6,25,14],[7,28,17]],src:'PJM summer-2025 RTO 5CP (hour ending → hour beginning)'},
+    'ERCOT':{name:'ERCOT · 4CP',off:[[6,19,17],[7,30,17],[8,18,17],[9,4,17]],src:'ERCOT official 2025 4CP intervals'},
+    'NYISO':{name:'NYISO',off:[[6,24,18],[7,29,18],[6,25,18],[6,23,18],[7,16,17],[7,25,15]],src:'NYISO summer-2025 hot-weather operations report'},
+    'ISONE':{name:'ISO-NE',off:[[6,24,18]],src:'ISO-NE 2025 annual peak hour'},
+    'CAISO':{name:'CAISO',off:[],src:''},'MISO':{name:'MISO',off:[],src:''},'SPP':{name:'SPP',off:[],src:''},
+    'APS':{name:'APS (Arizona)',off:[],src:''},'NVE':{name:'NV Energy',off:[],src:''},'XCEL':{name:'Xcel (Colorado)',off:[],src:''},
+    'PAC':{name:'PacifiCorp',off:[],src:''},'BPA':{name:'BPA / Pacific NW',off:[],src:''},'GPC':{name:'Georgia Power',off:[],src:''},
+    'MH':{name:'Manitoba Hydro',off:[],src:''},'IEC':{name:'IEC (Israel)',off:[],src:''}};
+  const SITE_GRID={nova:'PJM',apx:'PJM',cmh:'PJM',chi:'PJM',nyc:'NYISO',dfw:'ERCOT',aus:'ERCOT',svl:'CAISO',atl:'GPC',mci:'SPP',lit:'MISO',
+    slc:'PAC',las:'NVE',rno:'NVE',den:'XCEL',phx:'APS',pdx:'BPA',sea:'BPA',yak:'BPA',bdn:'MH',shm:'IEC'};
+  const DIM=[31,28,31,30,31,30,31,31,30,31,30,31], MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const hIdx=(m,d,h)=>{let n=0; for(let i=0;i<m-1;i++)n+=DIM[i]; return (n+d-1)*24+h;};
+  const idxLbl=i=>{let d=Math.floor(i/24), m=0; while(d>=DIM[m]){d-=DIM[m];m++;} return MON[m]+' '+(d+1)+' '+String(i%24).padStart(2,'0')+':00';};
+  const TONH_PER_MWH=1000/TON_KW;        // ton-hours per MWh-thermal
+  const RAMP_UP=7/60, DT=1/60, NPT=1440; // 7-minute linear ramp before the window, hard stop at its end, 1-minute chart grid
+  const CHG_S2P=[23,0,1,2,3,4,5,6,7,8,9]; // the night before, in time order
+  const f1=x=>(Math.round(x*10)/10).toFixed(1), fInt=x=>Math.round(x).toLocaleString('en-US');
+  const KWTON=kr=>kr*TON_KW;             // kW per kWth -> kW per ton
+  const tU=v=>S.units==='us'?v*9/5+32:v, uT=()=>S.units==='us'?'°F':'°C';   // ambient in the units toggle
+  const Z={start:14,dur:4,grid:null,storTonh:null,day:null,dayCp:null};
+  const S2P_AMB={db:true,wb:false};
+  const soft=h=>{const m=/^#([0-9a-f]{6})$/i.exec(h||''); if(!m)return h; const v=parseInt(m[1],16); return `rgba(${(v>>16)&255},${(v>>8)&255},${v&255},.55)`;};   // ambient traces on the year chart, toggled from the legend
+  let chD=null, chY=null, chS=null, chYkeep=null;
+  const gridKey=()=>Z.grid||SITE_GRID[W.hub]||'PJM';
+  const effDur=()=>Z.dur+RAMP_UP/2;
+  const win=()=>({a:Z.start,b:Math.min(24,Z.start+Z.dur)});
+
+  // ---------------------------------------------------------------- the day
+  // One day = 24 hour objects of the engine's weather, plus the night before it for charging.
+  // Every hour is priced by facBaseline(): the same arithmetic the annual run uses.
+  function profile(){
+    const p=R.p, y=typicalYear(W.hub), hrs=y.hrs;
+    let H, HN, date, isDesign, lim;
+    if(Z.day==null){
+      // THE TYPICAL DR DAY. Not the design day: if you know the grid's coincident peaks you know when the calls
+      // come. Average the ambient regime hour by hour across the ten coincident-peak days (and their nights
+      // before) and price that day - the shape a call will actually have.
+      const cps=cpHours(), days=cps.map(q=>Math.floor(q.idx/24));
+      const avg=(off)=>{let T=0,WB=0,n=0; days.forEach(d=>{const i=d*24+off; if(i>=0&&i<hrs.length){T+=hrs[i].T; WB+=hrs[i].WB; n++;}}); return {T:T/n,WB:WB/n};};
+      const mode=[...days.map(d=>hrs[d*24].m)].sort((a,b)=>days.filter(x=>hrs[x*24].m===a).length-days.filter(x=>hrs[x*24].m===b).length).pop();
+      H=[]; for(let h=0;h<24;h++){const v=avg(h); H.push({T:v.T,WB:v.WB,m:mode,hh:h});}
+      HN=CHG_S2P.map(h=>{const v=avg(h===23?-1:h); return {T:v.T,WB:v.WB,m:mode,hh:h};});
+      date='typical DR day'; isDesign=true; }
+    else { const o=Z.day*24; H=hrs.slice(o,o+24); date=idxLbl(o).replace(/ \d\d:00$/,'')+', '+R.base.yrCal; isDesign=false;
+      HN=CHG_S2P.map(h=>h===23?(o>0?hrs[o-1]:hrs[o+23]):hrs[o+h]); }
+    const bl=H.map(o=>facBaseline(o,p)), bn=HN.map(o=>facBaseline(o,p));
+    const fac=bl.map(x=>x.fac), mech=bl.map(x=>x.mech), th=bl.map(x=>x.th), fix=bl.map(x=>x.fix);
+    lim=R.base.pkFac;                                   // operational limit: the year's peak, every day
+    return {H,HN,bl,bn,fac,mech,th,fix,db:H.map(o=>o.T),wb:H.map(o=>o.WB),lim,date,isDesign,
+      nightFac:bn.map(x=>x.fac), nightTh:bn.map(x=>x.th), nightDb:HN.map(o=>o.T)};
+  }
+  // FACILITY MW IF THE STORE TAKES u kWth OFF HOUR i. The remaining duty is compressed at its own point
+  // on the datasheet part-load curve (mechEl -> plr), and at a lighter lift: the chillers sit upstream of
+  // the ice and hand it the last u/th share of the loop dT, so their leaving water rises by that share.
+  // ADIABATIC CASCADE: through the event the pads are triggered regardless of ambient - the remaining chillers
+  // breathe air pulled toward the wet-bulb whatever the legacy 90 F trigger would have done (spray=true).
+  const padsOn=()=>R.p.cascade===2?true:undefined;
+  function facA(pr,i,u){const t=pr.th[i]; if(t<=1e-9)return pr.fac[i]; const r=Math.max(0,t-u), sh=Math.min(1,u/t);
+    return pr.fix[i]+mechEl(pr.H[i],R.p.FWS+FIX.loopdt*sh,R.p,r,undefined,padsOn())/1000;}
+  // water the pads spend in the event (L): FOG_RATE gal per ton-hour rejected on the remaining chiller duty,
+  // and how much of it the legacy trigger would have spent anyway on those hours
+  function eventWater(pr,a,b,uOf){ if(R.p.cascade!==2)return null; let tot=0, legacy=0;
+    for(let h=a;h<b;h++){const u=uOf(h), rem=Math.max(0,pr.th[h]-u); tot+=FOG_RATE*(rem/TON_KW)*GAL_L; legacy+=waterLitres(pr.H[h],R.p.FWS,R.p);}
+    {const u=uOf(a), rem=Math.max(0,pr.th[a]-u); tot+=FOG_RATE*(rem/TON_KW)*GAL_L*RAMP_UP/2;}
+    return {tot,legacy,added:Math.max(0,tot-legacy)};}
+  // kWth needed in hour i to bring the facility down to F (flat cut), capped at the hour's whole duty
+  function uFor(pr,i,F){const t=pr.th[i]; if(t<=1e-9||pr.fac[i]<=F)return 0; if(facA(pr,i,t)>=F)return t;
+    let lo=0,hi=t; for(let k=0;k<36;k++){const m=(lo+hi)/2; if(facA(pr,i,m)>F)lo=m; else hi=m;} return hi;}
+  // ice spent for a cut to F: every window hour in full, plus the ramp-up's half-slot on the first hour
+  function iceFor(pr,F){const {a,b}=win(); let s=0; for(let h=a;h<b;h++)s+=uFor(pr,h,F); s+=uFor(pr,a,F)*RAMP_UP/2; return s;}   // kWth·h
+  function solve(pr,SkWh){const {a,b}=win(); let pk=0; for(let h=a;h<b;h++)pk=Math.max(pk,pr.fac[h]);
+    if(SkWh<=0)return pk; let lo=Math.min(...pr.fix)-1, hi=pk;
+    for(let k=0;k<44;k++){const m=(lo+hi)/2; if(iceFor(pr,m)>SkWh)lo=m; else hi=m;} return (lo+hi)/2;}
+  function firmFor(pr,SkWh){const {a,b}=win(), F=solve(pr,SkWh); let f=Infinity;
+    for(let h=a;h<b;h++){const u=uFor(pr,h,F); f=Math.min(f,pr.fac[h]-facA(pr,h,u));} return isFinite(f)?f:0;}
+  function fullShed(pr){const {a,b}=win(); let s=0; for(let h=a;h<b;h++)s+=pr.th[h]; return s+pr.th[a]*RAMP_UP/2;}
+  function sweep(pr,Smax){const pts=[], n=32; for(let i=0;i<=n;i++){const S=Smax*i/n; pts.push({S,firm:firmFor(pr,S)});}
+    const A=pts[0], Zp=pts[n], dx=Zp.S-A.S, dy=Zp.firm-A.firm, L=Math.hypot(dx,dy)||1; let best=1,bd=-1;
+    for(let i=1;i<n;i++){const d=Math.abs(dx*(A.firm-pts[i].firm)-(A.S-pts[i].S)*dy)/L; if(d>bd){bd=d;best=i;}}
+    return {pts,knee:pts[best]};}
+  // THE NIGHT BEFORE. The ice is made on IceBrick's own circuit by its own machines (the engine's ICE_CAP
+  // doctrine), so each charge hour can bank whatever fits under the operational limit at the ice circuit's
+  // own COP - the engine's charging work point, CHG_DT colder than the facility loop, at full load.
+  function nightCharge(pr){const p=R.p, lim=pr.lim, thc=[], el=[]; let tot=0;
+    CHG_S2P.forEach((h,j)=>{const o=pr.HN[j], fb=pr.nightFac[j];
+      const room=Math.max(0,lim-fb)*1000, cop=copAt(o,p.FWS-CHG_DT,p,1);   // kW electric of room; ice-circuit COP
+      const c=room*cop; thc.push(c); el.push(room/1000); tot+=c;});
+    return {lim,tot,thc,el};}
+  // fill in ONE continuous block: the shortest run of consecutive hours that can refill the store, the
+  // coldest such run; every hour to the full room, only the warmer end hour partial
+  function chargePlan(pr,nc,fillTh){const n=CHG_S2P.length, thS=new Array(n).fill(0), elS=new Array(n).fill(0), frS=new Array(n).fill(0); let used=[], rate=0, mw=0;
+    if(fillTh>1e-9){ let best=null;
+      for(let len=1;len<=n&&!best;len++) for(let i=0;i+len<=n;i++){ let cap=0,db=0; for(let j=i;j<i+len;j++){cap+=nc.thc[j]; db+=pr.nightDb[j];}
+        if(cap>=fillTh-1e-9){const m=db/len; if(!best||m<best.m)best={i,len,m};} }
+      if(!best)best={i:0,len:n,m:0};
+      let idx=[]; for(let j=best.i;j<best.i+best.len;j++)idx.push(j);
+      if(idx.length>1&&pr.nightDb[idx[0]]>pr.nightDb[idx[idx.length-1]])idx.reverse();
+      let left=fillTh; for(const j of idx){ if(left<=1e-9)break; const take=Math.min(nc.thc[j],left); if(take<=1e-9)continue; const fr=take/nc.thc[j];
+        thS[j]=take; elS[j]=nc.el[j]*fr; frS[j]=fr; left-=take; rate=Math.max(rate,take); mw=Math.max(mw,elS[j]); used.push(j);} }
+    used.sort((x,y)=>x-y);
+    return {thS,elS,frS,used,rate,mw,hours:used.map(j=>String(CHG_S2P[j]).padStart(2,'0')+':00')};}
+  // coincident peaks of the chosen grid on the simulated year: the official hours when the year is 2025,
+  // the site's hottest days otherwise, always ten
+  function cpHours(){const g=GRIDS[gridKey()], fac=R.base.fac, amb=R.base.amb, out=[], seen=new Set();
+    if(R.base.yrCal===2025) g.off.forEach(([m,d,h],i)=>{const idx=hIdx(m,d,h); if(idx<fac.length){out.push({idx,rank:i+1,official:true}); seen.add(Math.floor(idx/24));}});
+    const days=[]; for(let d=0;d<365;d++){ if(seen.has(d))continue; let mx=-99,hi=d*24; for(let h=d*24;h<Math.min(fac.length,d*24+24);h++){ if(amb[h]>mx){mx=amb[h]; hi=h;} } days.push({d,mx,hi}); }   // the day's hottest hour: grids peak with the heat, not with a fixed-trigger artefact
+    days.sort((a,b)=>b.mx-a.mx); for(const q of days){ if(out.length>=10)break; out.push({idx:q.hi,rank:out.length+1,official:false}); }
+    return out;}
+
+  // ---------------------------------------------------------------- run
+  let LAST=null;
+  function run(){
+    const pr=profile(), {a,b}=win(), full=fullShed(pr), nc=nightCharge(pr), nightMax=nc.tot/CHG_LOSS, Smax=Math.min(full,nightMax);
+    const sw=sweep(pr,Smax), sliderMax=Math.max(full,nightMax);
+    if(Z.storTonh==null)Z.storTonh=sw.knee.S/1000*TONH_PER_MWH;
+    const S=Math.min(Z.storTonh/TONH_PER_MWH*1000,sliderMax), F=solve(pr,S), reachable=S<=nightMax+1e-6;
+    // hourly results, then the minute grid for the chart
+    let kr=0; for(let h=Math.max(0,a-1);h<b;h++) if(pr.th[h]>1e-9) kr=Math.max(kr,pr.mech[h]*1000/pr.th[h]);
+    const hr=pr.fac.map((fac,h)=>{const inW=h>=a&&h<b, u=inW?uFor(pr,h,F):0, fA=inW?facA(pr,h,u):fac, red=fac-fA;
+      const disp=Math.min(red,u*kr/1000), bon=red-disp; return {fac,facA:fA,u,red,disp,bon,mech:pr.mech[h],mechA:pr.mech[h]-red};});
+    let firm=Infinity, pkH=a, mwhW=0, used=0; for(let h=a;h<b;h++){firm=Math.min(firm,hr[h].red); mwhW+=hr[h].red; used+=hr[h].u; if(pr.fac[h]>pr.fac[pkH])pkH=h;}
+    if(!isFinite(firm))firm=0; used+=hr[a].u*RAMP_UP/2; const mwh=mwhW+hr[a].red*RAMP_UP/2;
+    const r=hr[pkH], cp=chargePlan(pr,nc,S*CHG_LOSS), tonh=S/1000*TONH_PER_MWH;
+    const chgRT=cp.rate/TON_KW, lift0=(pr.db[pkH]+COND_APPR)-(R.p.FWS-EVAP_APPR), sh=pr.th[pkH]>0?Math.min(1,r.u/pr.th[pkH]):0, lift1=lift0-FIX.loopdt*sh;
+    const h2o=eventWater(pr,a,b,h=>hr[h].u);
+    const kneeRatio=sw.knee.firm>0?(sw.knee.S/1000*TONH_PER_MWH)/(sw.knee.firm*1000):0;
+    const fullFirm=firmFor(pr,full), fullRatio=fullFirm>0?(full/1000*TONH_PER_MWH)/(fullFirm*1000):0;
+    LAST={pr,hr,a,b,F,S,firm,mwh,mwhW,used,pkH,kr,cp,nc,sw,full,nightMax,sliderMax,tonh,chgRT,lift0,lift1,sh,kneeRatio,fullRatio,fullFirm,reachable,h2o};
+    paint(); return LAST;
+  }
+  const hh=h=>String(h).padStart(2,'0')+':00';
+  function paint(){const L=LAST, pr=L.pr, r=L.hr[L.pkH], g=GRIDS[gridKey()];
+    $('s2_firm').innerHTML=f1(L.firm)+'<span class="u">MW</span>';
+    $('s2_firm_s').textContent=(L.reachable?'':'NOT REACHABLE with this store — ')+`sheddable in every minute of the ${Z.dur} h event (${hh(L.a)}–${hh(L.b)}; discharge ramps up over ${Math.round(RAMP_UP*60)} min before it and stops at its end) on ${pr.isDesign?'the typical DR day (hour-by-hour average of the ten coincident-peak days)':pr.date} · the number you can put in a utility contract`;
+    $('s2_mwh').innerHTML=f1(L.mwh)+'<span class="u">MWh</span>';
+    $('s2_mwh_s').textContent=`electric energy the grid does not see · ${f1(L.mwhW)} MWh inside the window, the rest in the ${Math.round(RAMP_UP*60)} min ramp-up · ${fInt(L.used/1000*TONH_PER_MWH)} ton-h of ice spent`;
+    $('s2_stor').innerHTML=fInt(L.tonh)+'<span class="u">ton-h</span>';
+    $('s2_stor_s').textContent=`= ${f1(L.S/1000)} MWh-th usable · ${Math.round(100*L.S/L.full)}% of the ${fInt(L.full/1000*TONH_PER_MWH)} ton-h a full shed needs · the night before can freeze up to ${fInt(L.nightMax/1000*TONH_PER_MWH)} ton-h under the ${f1(L.nc.lim)} MW operational limit`;
+    $('s2_li').innerHTML=f1(L.mwh)+'<span class="u">MWh</span> · '+f1(r.red)+'<span class="u">MW</span>';
+    $('s2_li_s').textContent=`a lithium battery would need ${f1(L.mwh)} MWh usable at ${f1(r.red)} MW to do the same — with fire-suppression scope and cell degradation IceBrick does not have`;
+    $('s2_pk').textContent='−'+f1(r.red)+' MW'; $('s2_pk_s').textContent=`${f1(r.fac)} → ${f1(r.facA)} MW at ${hh(L.pkH)}`;
+    $('s2_dir').textContent='−'+f1(r.disp)+' MW'; $('s2_bon').textContent='−'+f1(r.bon)+' MW';
+    $('s2_bon_s').textContent=`· lift ${tD1(L.lift0)} → ${tD1(L.lift1)} (ice takes ${Math.round(100*L.sh)}% of the ${tD1(FIX.loopdt)} loop ΔT) and the datasheet part-load curve on the ${Math.round(100*(1-L.sh))}% that stays on the chillers${R.p.cascade===2?' · pads on through the event':''}`;
+    $('s2_kwt').textContent=KWTON(L.kr).toFixed(2)+' kW/ton';
+    $('s2_kwt_s').textContent=`the chillers' worst work point of the discharge (${Math.round(L.kr*1000)} kW per MWth, COP ${(1/L.kr).toFixed(2)}) · every displaced ton-hour is valued here · ${CHILLER.short} datasheet carried by lift to your ${tA1(R.p.FWS)} facility water`;
+    $('s2_chg').textContent=fInt(L.chgRT)+' RT';
+    $('s2_chg_s').textContent=`refills the store in one continuous block, the coldest run of hours that can do it, each hour to the full room under the operational limit · ${L.cp.used.length} h: ${L.cp.hours.join(', ')||'—'} · up to ${f1(L.cp.mw)} MW electric · IceBrick's own ice plant, ${tD1(CHG_DT)} colder than the facility loop`;
+    {const e=$('s2_h2o_t'); if(e){ e.style.display=L.h2o?'':'none'; if(L.h2o){ const m3=L.h2o.tot/1000, gal=L.h2o.tot/GAL_L, add=L.h2o.added/1000;
+      $('s2_h2o').textContent=(m3>=100?Math.round(m3).toLocaleString('en-US'):m3.toFixed(1))+' m³';
+      $('s2_h2o_s').textContent=`pads triggered for the whole event regardless of ambient · ${fInt(gal)} gal on the cooling left with the chillers · ${add<0.05?'none of it':(add>=100?Math.round(add).toLocaleString('en-US'):add.toFixed(1))+' m³ of it'} beyond what the legacy ${Math.round(FOG_C*9/5+32)} °F trigger would spend on these hours`;}}}
+    $('s2_ratio').textContent=L.firm>0?(L.tonh/(L.firm*1000)).toFixed(2)+' ton-h/kW':'—';
+    $('s2_ratio_s').textContent=`ton-h per kW of firm curtailment · knee ${L.kneeRatio.toFixed(2)} · full shed ${L.fullRatio.toFixed(2)} · displacement alone ${(effDur()/KWTON(L.kr)).toFixed(2)}`;
+    $('s2_vstor').textContent=fInt(L.tonh)+' ton-h';
+    $('s2_hstor').innerHTML=L.reachable?`${fInt(L.tonh)} ton-h · ${fInt(L.chgRT)} RT charging plant`:
+      `<span style="color:#b45309"><b>Not possible:</b> the night before can freeze only ${fInt(L.nightMax/1000*TONH_PER_MWH)} ton-h under the ${f1(L.nc.lim)} MW operational limit — this store would start the event part-empty.</span>`;
+    // slider + markers
+    {const sl=$('s2_istor'), smax=L.sliderMax/1000*TONH_PER_MWH; sl.max=String(Math.round(smax)); sl.step='100'; sl.value=String(Math.round(L.tonh));
+     const pos=v=>(100*v/smax).toFixed(2)+'%', fullOK=L.full<=L.nightMax+1e-6;
+     $('s2_marks').innerHTML=[['knee',L.sw.knee.S/1000*TONH_PER_MWH,'optimum ton-h/kW<br>'+fInt(L.sw.knee.S/1000*TONH_PER_MWH)],
+       ['night',L.nightMax/1000*TONH_PER_MWH,'max the night before<br>'+fInt(L.nightMax/1000*TONH_PER_MWH)],
+       [fullOK?'full':'no',L.full/1000*TONH_PER_MWH,'100% of the chillers<br>'+fInt(L.full/1000*TONH_PER_MWH)+(fullOK?'':' · not possible')]]
+       .map(([k,v,t])=>`<div class="mk ${k}" style="left:${pos(v)}" data-v="${Math.round(v)}"><i></i>${t}</div>`).join('');
+     const mks=[...$('s2_marks').querySelectorAll('.mk')]; mks.forEach(m=>m.addEventListener('click',()=>{Z.storTonh=+m.dataset.v; run();}));
+     const Wd=$('s2_marks').getBoundingClientRect().width||1; let tall=false; mks.sort((x,y)=>parseFloat(x.style.left)-parseFloat(y.style.left));
+     mks.forEach(m=>{const pc=parseFloat(m.style.left), w=m.getBoundingClientRect().width||120; if(pc/100*Wd+w/2>Wd)m.classList.add('r'); else if(pc/100*Wd-w/2<0)m.classList.add('l');});
+     let lastR=-1e9,row=0; mks.forEach(m=>{const cx=parseFloat(m.style.left)/100*Wd, w=m.getBoundingClientRect().width||120, l=m.classList.contains('r')?cx-w:(m.classList.contains('l')?cx:cx-w/2);
+       if(l<lastR+8&&row===0){m.classList.add('lo');row=1;tall=true;} else {row=0;lastR=l+w;}}); $('s2_marks').classList.toggle('tall',tall);}
+    $('s2_stag').textContent=`firm curtailment against store size · event ${Z.dur} h · ${KWTON(L.kr).toFixed(2)} kW/ton · knee at ${fInt(L.sw.knee.S/1000*TONH_PER_MWH)} ton-h`;
+    $('s2_snote').innerHTML=`Displaced ton-hours are all worth the same — ${KWTON(L.kr).toFixed(2)} kW/ton, ${(effDur()/KWTON(L.kr)).toFixed(2)} ton-h per kW over the ${effDur().toFixed(2)} h discharge. `+
+      `The bonus is on the cooling that stays on the chillers — a lighter lift as the ice takes more of the loop ΔT, and the ${CHILLER.short}'s own part-load curve: the first ice unloads a big remainder, the last ice has almost nothing left to improve, so the curve bends. `+
+      `The <b>knee</b> — ${fInt(L.sw.knee.S/1000*TONH_PER_MWH)} ton-h, ${f1(L.sw.knee.firm)} MW firm, ${L.kneeRatio.toFixed(2)} ton-h/kW — is where it bends: past it each extra kW of commitment costs ${(L.fullRatio/Math.max(0.01,L.kneeRatio)).toFixed(1)}× more store on average. `+
+      `A full shed (${fInt(L.full/1000*TONH_PER_MWH)} ton-h) buys ${f1(L.fullFirm)} MW. Pick full shed if the utility pays for every megawatt; pick the knee if the store has to pay for itself.`;
+    $('s2_ctag').textContent=`${HUBS[W.hub].name} · ${pr.isDesign?'typical DR day · average of the 10 '+GRIDS[gridKey()].name+' coincident-peak days':pr.date+(Z.dayCp?' · '+Z.dayCp:'')} · IT ${W.IT} MW · ${CASCADES[W.cascade].name} · FWS ${tA1(R.p.FWS)} · event ${hh(L.a)}–${hh(L.b)} · operational limit ${f1(pr.lim)} MW`;
+    $('s2_dtitle').textContent=pr.isDesign?'A typical DR-event day, with the event':'Your chosen day with the event';
+    $('s2_back').style.display=pr.isDesign?'none':'';
+    $('s2_note').innerHTML=`<b>Reading the chart.</b> ${pr.isDesign?'This is not the design day: it is the typical day a call comes on — the ambient regime averaged hour by hour across the ten '+GRIDS[gridKey()].name+' coincident-peak days, priced through the same chiller. ':''}The red line is the facility on this day as it runs today; the black line is the same day with the event delivered. `+
+      `The store ramps up over ${Math.round(RAMP_UP*60)} min before the window so the chillers are down when it opens, holds through it, and stops at its end — the <b>light-blue band</b> is that displacement, every ton-hour valued at the peak kW/ton, and the <b>pink band</b> is the bonus the cooling left on the chillers earns at a lighter work point. `+
+      `The orange line is the ambient dry-bulb, the dashed one the wet-bulb. The <b>dark-blue band</b> is the charging plant refilling the store in one continuous block of the coldest hours of the night before, each hour up to the dashed operational limit — the store can only be as big as that room. `+
+      `The commitment (${f1(L.firm)} MW) is the smallest reduction inside the window, because the utility pays for what you can deliver in every hour, not the best one.`+(R.p.cascade===2?` On the adiabatic cascade the pads are triggered for the whole event regardless of ambient, so the chillers left running breathe air pulled toward the wet-bulb; the water that costs is in the tile above.`:'');
+    drawS(); drawYear(); drawDay();
+  }
+
+  // ---------------------------------------------------------------- charts
+  const lerp=(arr,t)=>{const h=Math.floor(t), f=t-h, v0=arr[Math.min(23,h)], v1=arr[Math.min(23,h+1)]; return v0+(v1-v0)*f;};
+  const shape=(t,a,b)=>{ if(t>=a&&t<b)return 1; if(t>=a-RAMP_UP&&t<a)return Math.min(1,(t+DT/2-(a-RAMP_UP))/RAMP_UP); return 0; };
+  function drawDay(){const L=LAST, pr=L.pr, c=C(), {a,b}=L, labels=[], fac=[], facA=[], noE=[], db=[], wb=[], chg=[], winF=[], rows=[];
+    const red=L.hr.map(x=>x.red), disp=L.hr.map(x=>x.disp), chgOn=(h,x)=>{const j=CHG_S2P.indexOf(h); if(j<0)return false; const fr=L.cp.frS[j]; if(fr<=0)return false;
+      const prevOn=(j>0?L.cp.frS[j-1]:0)>0; return prevOn?(x<fr-1e-9):(x>=1-fr-1e-9);};
+    // ADIABATIC: water hour by hour - today (legacy trigger) and with the event (pads forced on through the window,
+    // on the duty left with the chillers). m3 per hour, stepped, on its own low axis at the foot of the chart.
+    const wet=R.p.cascade===2, wT=[], wE=[];
+    const wToday=h=>waterLitres(pr.H[h],R.p.FWS,R.p)/1000, wEvent=(h,f)=>{const u=f*(h>=a&&h<b?L.hr[h].u:L.hr[a].u); return FOG_RATE*(Math.max(0,pr.th[h]-u)/TON_KW)*GAL_L/1000;};
+    for(let i=0;i<NPT;i++){const t=i*DT, h=Math.floor(t), x=t-h, f=shape(t,a,b);
+      if(wet){wT.push(wToday(h)); wE.push(f>0?wEvent(h,f):wToday(h));}
+      // inside the window the hourly cut is interpolated between window hours only (the step at the edges is real)
+      const lw=arr=>(t>=a&&t<b)?((h+1<b)?arr[h]+(arr[h+1]-arr[h])*x:arr[h]):arr[a];
+      const fT=lerp(pr.fac,t), rT=f*lw(red), dT=f*lw(disp);
+      const fA=fT-rT, nE=fT-dT; labels.push(String(h).padStart(2,'0')+':'+String(Math.round(x*60)).padStart(2,'0'));
+      fac.push(fT); facA.push(fA); noE.push(nE); db.push(tU(lerp(pr.db,t))); wb.push(tU(lerp(pr.wb,t))); chg.push(chgOn(h,x)?pr.lim:fA); winF.push(t>=a&&t<b?pr.lim*1.02:null);
+      rows.push({t,fac:fT,facA:fA,mech:lerp(pr.mech,t),mechA:lerp(pr.mech,t)-rT,disp:dT,bon:rT-dT,db:db[i],wb:wb[i],chg:chg[i],wT:wet?wT[i]:0,wE:wet?wE[i]:0});}
+    let bFlat=Infinity; for(let h=0;h<24;h++)bFlat=Math.min(bFlat,pr.fac[h]-pr.mech[h]);
+    const lo=Math.min(bFlat,Math.min(...facA)), hi=Math.ceil(pr.lim+2);
+    const ds=[
+      {label:'Event window',data:winF,backgroundColor:'rgba(2,132,199,.07)',borderWidth:0,pointRadius:0,fill:'origin',stepped:true,order:9},
+      {label:'Operational limit',data:labels.map(()=>pr.lim),borderColor:c.mech,borderDash:[7,4],backgroundColor:'transparent',borderWidth:1.3,pointRadius:0,order:0},
+      {label:'Charging the night before',data:chg,borderColor:'transparent',backgroundColor:c.chgFill,borderWidth:0,pointRadius:0,fill:'+3',order:4},
+      {label:'Facility demand — today',data:fac,borderColor:c.chiller,backgroundColor:'transparent',borderWidth:2,pointRadius:0,order:1},
+      {label:'Displacement',data:noE,borderColor:'transparent',backgroundColor:c.disFill,borderWidth:0,pointRadius:0,fill:'-1',order:3},
+      {label:'Bonus',data:facA,borderColor:'transparent',backgroundColor:c.wpFill,borderWidth:0,pointRadius:0,fill:'-1',order:3},
+      {label:'Facility demand — with IceBrick',data:facA,borderColor:c.mech,backgroundColor:'transparent',borderWidth:2.4,pointRadius:0,order:0},
+      {label:'Ambient dry-bulb',data:db,borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.4,pointRadius:0,yAxisID:'y3',order:0},
+      {label:'Wet-bulb',data:wb,borderColor:c.wb,borderDash:[4,3],backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,yAxisID:'y3',order:0},
+      {label:'Mechanical cooling axis',data:[null],yAxisID:'y2',showLine:false,pointRadius:0,order:9}]
+      .concat(wet?[{label:'Water today',data:wT,borderColor:c.waterT,backgroundColor:c.waterFill,borderWidth:1,pointRadius:0,fill:'origin',stepped:true,yAxisID:'y5',order:7},
+                   {label:'Water with the event',data:wE,borderColor:c.water,backgroundColor:'transparent',borderWidth:1.6,borderDash:[5,3],pointRadius:0,stepped:true,yAxisID:'y5',order:6}]:[]);
+    const wMax=wet?Math.max(1,Math.max(...wT,...wE)):1;
+    if(chD)chD.destroy();
+    chD=new Chart($('s2_cv'),{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,
+      interaction:{mode:'nearest',intersect:true},events:[],elements:{point:{radius:0,hoverRadius:0}},plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{grid:{display:false},ticks:{color:c.tick,autoSkip:false,maxRotation:0,callback:(v,i)=>i%120===0?labels[i]:''}},
+        y:{min:lo,max:hi,grid:{color:c.grid},ticks:{color:c.tick,callback:v=>(Math.abs(v)<0.05?0:v).toFixed(0)},title:{display:true,text:'MW electric — whole facility',color:c.tick}},
+        y2:{position:'right',min:lo-bFlat,max:hi-bFlat,grid:{display:false},ticks:{color:c.tick,callback:v=>(Math.abs(v)<0.05?0:v).toFixed(0)},title:{display:true,text:'MW — mechanical cooling (from 0, base '+f1(bFlat)+' MW)',color:c.tick}},
+        y3:{position:'right',grid:{display:false},ticks:{color:c.amb},title:{display:true,text:'ambient '+uT(),color:c.amb}},
+        y5:{position:'left',display:wet,min:0,max:wMax*4,grid:{display:false},ticks:{color:c.water,callback:v=>v<=wMax*1.05?v.toFixed(0):''},title:{display:wet,text:'pad water · m³ per hour',color:c.water}}}}});
+    // hover: name only the thing under the cursor
+    {const cv=$('s2_cv'), box=cv.parentElement; let tip=$('s2_tip'); if(!tip){tip=document.createElement('div'); tip.id='s2_tip'; tip.className='s2tip'; box.appendChild(tip);}
+     const px=(sc,v)=>chD.scales[sc].getPixelForValue(v);
+     cv.onmousemove=ev=>{const Rb=cv.getBoundingClientRect(), mx=ev.clientX-Rb.left, my=ev.clientY-Rb.top, sx=chD.scales.x;
+       if(mx<sx.left||mx>sx.right||my<chD.scales.y.top||my>chD.scales.y.bottom){tip.style.display='none';return;}
+       const i=Math.max(0,Math.min(rows.length-1,Math.round(sx.getValueForPixel(mx)))), r=rows[i], t=labels[i], near=(sc,v)=>Math.abs(px(sc,v)-my)<7; let txt=null;
+       if(near('y',pr.lim))txt=`Operational limit ${pr.lim.toFixed(1)} MW — the year’s peak`;
+       else if(near('y',r.fac))txt=`${t} · facility today ${r.fac.toFixed(2)} MW · mechanical ${r.mech.toFixed(2)} MW`+(wet?` · pads ${r.wT>0?'on, '+r.wT.toFixed(0)+' m³/h':'off'}`:'');
+       else if(near('y',r.facA))txt=`${t} · with IceBrick ${r.facA.toFixed(2)} MW · net mechanical ${r.mechA.toFixed(2)} MW`+(wet?` · pads ${r.wE>0?'on, '+r.wE.toFixed(0)+' m³/h':'off'}`:'');
+       else if(wet&&near('y5',r.wE))txt=`${t} · pad water with the event ${r.wE.toFixed(0)} m³/h${r.wT>0?' (today '+r.wT.toFixed(0)+')':' (pads off today)'}`;
+       else if(wet&&near('y5',r.wT))txt=`${t} · pad water today ${r.wT.toFixed(0)} m³/h`;
+       else if(near('y3',r.db))txt=`${t} · dry-bulb ${r.db.toFixed(1)} ${uT()}`; else if(near('y3',r.wb))txt=`${t} · wet-bulb ${r.wb.toFixed(1)} ${uT()}`;
+       else {const y=chD.scales.y.getValueForPixel(my);
+         if(y<=r.fac&&y>=r.fac-r.disp&&r.disp>1e-6)txt=`${t} · displacement −${r.disp.toFixed(2)} MW at ${KWTON(L.kr).toFixed(2)} kW/ton`;
+         else if(y<r.fac-r.disp&&y>=r.facA&&r.bon>1e-6)txt=`${t} · bonus on the remaining chillers −${r.bon.toFixed(2)} MW`;
+         else if(y>r.facA&&y<=r.chg&&r.chg-r.facA>1e-6)txt=`${t} · charging +${(r.chg-r.facA).toFixed(2)} MW, the room under the operational limit`;}
+       if(!txt){tip.style.display='none';return;}
+       tip.textContent=txt; tip.style.display='block'; const bw=box.clientWidth, tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(bw-tw,mx+12))+'px'; tip.style.top=Math.max(0,my-34)+'px';};
+     cv.onmouseleave=()=>{tip.style.display='none';};}
+    $('s2_lg').innerHTML=[[c.mech,'Operational limit','line'],[c.chiller,'Facility demand — today','line'],[c.mech,'Facility demand — with IceBrick','line'],[c.chgFill,'Charging the night before',''],
+      [c.disFill,'Displacement — discharge at the peak kW/ton',''],[c.wpFill,'Bonus — remaining cooling at a better work point',''],['rgba(2,132,199,.25)','Event window',''],[c.amb,'Ambient dry-bulb (right axis)','line'],[c.wb,'Wet-bulb (right axis)','line']].concat(wet?[[c.waterFill,'Pad water today — legacy trigger (foot of the chart, m³/h)',''],[c.water,'Pad water with the event — pads on through the window','line']]:[])
+      .map(([col,t,k])=>`<span class="lgi" style="cursor:default"><i class="swatch${k?' line':''}" style="background:${col}"></i>${t}</span>`).join('');
+  }
+  function drawS(){const L=LAST, c=C(), xs=L.sw.pts.map(q=>q.S/1000*TONH_PER_MWH), ys=L.sw.pts.map(q=>q.firm), kneeX=L.sw.knee.S/1000*TONH_PER_MWH, pickX=L.tonh;
+    let best=L.sw.pts[0]; for(const q of L.sw.pts) if(Math.abs(q.S-L.S)<Math.abs(best.S-L.S))best=q;
+    if(chS)chS.destroy();
+    chS=new Chart($('s2_cs'),{type:'line',data:{datasets:[
+      {label:'Firm curtailment',data:xs.map((x,i)=>({x,y:ys[i]})),borderColor:c.water,backgroundColor:c.waterFill,fill:'origin',borderWidth:2,pointRadius:0,tension:.25,order:2},
+      {label:'Knee — recommended',data:[{x:kneeX,y:L.sw.knee.firm}],showLine:false,pointRadius:7,pointBackgroundColor:c.chiller,pointBorderColor:'#fff',pointBorderWidth:2,order:0},
+      {label:'Your pick',data:[{x:pickX,y:best.firm}],showLine:false,pointRadius:6,pointBackgroundColor:c.mech,pointBorderColor:'#fff',pointBorderWidth:2,order:1}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{intersect:false,mode:'nearest'},
+        plugins:{legend:{display:true,position:'bottom',labels:{color:c.tick,boxWidth:10}},tooltip:Object.assign(ttBase(),{callbacks:{label:x=>` ${x.dataset.label}: ${Math.round(x.raw.x).toLocaleString()} ton-h → ${x.raw.y.toFixed(1)} MW firm`}})},
+        scales:{x:{type:'linear',grid:{display:false},ticks:{color:c.tick,callback:v=>Math.round(v/1000)+'k'},title:{display:true,text:'IceBrick storage, ton-h',color:c.tick}},
+          y:{grid:{color:c.grid},ticks:{color:c.tick},title:{display:true,text:'firm curtailment, MW',color:c.tick},beginAtZero:true}}}});
+  }
+  function drawYear(){const L=LAST, c=C(), g=GRIDS[gridKey()], fac=R.base.fac, mech=R.base.mech, cps=cpHours(), pr=L.pr;
+    // shed available at any hour with this store: the same flat cut solved on that hour's own duty and weather
+    const y=typicalYear(W.hub).hrs, qRate=L.S/effDur();   // kWth per hour of discharge
+    const after=i=>{const o=y[i], bl=facBaseline(o,R.p); if(bl.th<=1e-9)return bl.fac; const u=Math.min(bl.th,qRate), sh=u/bl.th;
+      return bl.fix+mechEl(o,R.p.FWS+FIX.loopdt*sh,R.p,bl.th-u,undefined,padsOn())/1000;};
+    // water the pads spend in an event on a given day (adiabatic only): the window at this store's discharge rate
+    const wet=R.p.cascade===2, {a:wa,b:wb}=win();
+    const dayWater=d=>{ if(!wet)return null; let tot=0,legacy=0; for(let h=wa;h<wb;h++){const o=y[d*24+h], bl=facBaseline(o,R.p), u=Math.min(bl.th,qRate), rem=Math.max(0,bl.th-u);
+      tot+=FOG_RATE*(rem/TON_KW)*GAL_L; legacy+=waterLitres(o,R.p.FWS,R.p);} return {tot,added:Math.max(0,tot-legacy)}; };
+    cps.forEach(q=>{q.h2o=dayWater(Math.floor(q.idx/24));});
+    const wat=(R.p.cascade!==1&&R.base.wat)?R.base.wat:null;   // L per hour, the legacy trigger as it runs today
+    const pts=cps.map(q=>({x:q.idx,y:fac[q.idx],c:q})), ptsA=cps.map(q=>({x:q.idx,y:after(q.idx),c:q})), lim=R.base.pkFac, selDay=Z.day;
+    let baseFlat=Infinity; for(let i=0;i<fac.length;i++)baseFlat=Math.min(baseFlat,fac[i]-mech[i]);
+    const yLo=Math.min(baseFlat,Math.min(...fac)), yHi=Math.ceil(lim+1);
+    let keep=null; if(chY&&chY.scales&&chY.scales.x){const sx=chY.scales.x; if(sx.max-sx.min<8758)keep={min:sx.min,max:sx.max};}
+    if(chY)chY.destroy();
+    chY=new Chart($('s2_cy'),{type:'line',data:{datasets:[
+      {label:'Facility demand',data:fac.map((v,i)=>({x:i,y:v})),borderColor:c.chiller,backgroundColor:'transparent',borderWidth:.8,pointRadius:0,order:5},
+      {label:'Grid coincident peak — before',data:pts,showLine:false,pointRadius:pts.map(q=>Math.floor(q.x/24)===selDay?9:6),pointBackgroundColor:pts.map(q=>Math.floor(q.x/24)===selDay?c.mech:c.chiller),pointBorderColor:'#fff',pointBorderWidth:1.5,order:0},
+      {label:'Grid coincident peak — with the event',data:ptsA,showLine:false,pointRadius:6,pointStyle:'rectRot',pointBackgroundColor:c.water,pointBorderColor:'#fff',pointBorderWidth:1.5,order:0},
+      {label:'Annual peak today',data:[{x:0,y:lim},{x:8759,y:lim}],borderColor:c.mech,borderDash:[7,4],borderWidth:1.2,pointRadius:0,order:4},
+      {label:'Mechanical cooling axis',data:[{x:0,y:0}],yAxisID:'y2',showLine:false,pointRadius:0,order:9}]
+      .concat(wat?[{label:'Cooling water today',data:wat.map((v,i)=>({x:i,y:v/1000})),borderColor:c.waterT,backgroundColor:c.waterFill,fill:'origin',borderWidth:.6,pointRadius:0,yAxisID:'y4',order:6}]:[])
+      .concat([{label:'Ambient dry-bulb',data:R.base.amb.map((v,i)=>({x:i,y:tU(v)})),borderColor:soft(c.amb),backgroundColor:'transparent',borderWidth:.6,pointRadius:0,yAxisID:'y3',order:7,hidden:!S2P_AMB.db},
+               {label:'Wet-bulb',data:R.base.wb.map((v,i)=>({x:i,y:tU(v)})),borderColor:soft(c.wb),borderDash:[4,3],backgroundColor:'transparent',borderWidth:.6,pointRadius:0,yAxisID:'y3',order:7,hidden:!S2P_AMB.wb}])},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,parsing:false,normalized:true,interaction:{intersect:true,mode:'nearest'},
+        onClick:(ev,els,ch)=>{const el=els.find(e=>e.datasetIndex===1||e.datasetIndex===2); if(!el)return;
+          const q=ch.data.datasets[el.datasetIndex].data[el.index]; Z.day=Math.floor(q.x/24); Z.dayCp=g.name+' peak #'+q.c.rank+(q.c.official?'':' (estimated)'); Z.storTonh=null; setTimeout(run,0);},
+        plugins:{legend:{display:false},
+          zoom:{zoom:{drag:{enabled:true,backgroundColor:'rgba(45,212,191,.18)',borderColor:'rgba(45,212,191,.55)',borderWidth:1},wheel:{enabled:true,modifierKey:'ctrl'},mode:'x'},pan:{enabled:true,mode:'x',modifierKey:'shift'},limits:{x:{min:0,max:8759}}},
+          tooltip:Object.assign(ttBase(),{callbacks:{title:it=>idxLbl(Math.round(it[0].raw.x)),
+            label:it=>{const q=it.raw.c; if(it.dataset.label==='Mechanical cooling axis')return null;
+              if(!q)return ` ${it.dataset.label}: ${it.raw.y.toFixed(2)} MW · mechanical ${(mech[Math.round(it.raw.x)]||0).toFixed(2)} MW`;
+              if(it.dataset.label==='Cooling water today')return ` water today: ${it.raw.y.toFixed(1)} m³ in this hour`;
+              if(it.dataset.yAxisID==='y3')return ` ${it.dataset.label}: ${it.raw.y.toFixed(1)} ${uT()}`;
+              const w=(q.h2o&&it.dataset.label.includes('with'))?` · event water ${Math.round(q.h2o.tot/1000).toLocaleString('en-US')} m³ (${Math.round(q.h2o.added/1000).toLocaleString('en-US')} m³ beyond the legacy trigger)`:'';
+              return ` ${g.name} peak #${q.rank}${q.official?' (official)':' (estimated from weather)'} · ${it.dataset.label.includes('with')?'with the event':'before'}: ${it.raw.y.toFixed(2)} MW`+w;}}})},
+        scales:{x:{type:'linear',min:0,max:8759,grid:{display:false},ticks:{color:c.tick,stepSize:730,callback:v=>{let d=Math.floor(v/24),m=0;while(m<11&&d>=DIM[m]){d-=DIM[m];m++;}return d<3?MON[m]:'';},maxRotation:0}},
+          y:{min:yLo,max:yHi,grid:{color:c.grid},ticks:{color:c.tick,callback:v=>(Math.abs(v)<0.05?0:v).toFixed(0)},title:{display:true,text:'MW electric — whole facility',color:c.tick}},
+          y2:{position:'right',min:yLo-baseFlat,max:yHi-baseFlat,grid:{display:false},ticks:{color:c.tick,callback:v=>(Math.abs(v)<0.05?0:v).toFixed(0)},title:{display:true,text:'MW — mechanical cooling only (from 0)',color:c.tick}},
+          y3:{position:'right',display:S2P_AMB.db||S2P_AMB.wb,grid:{display:false},ticks:{color:c.amb},title:{display:true,text:'ambient '+uT(),color:c.amb}},
+          y4:{position:'right',display:!!wat,min:0,max:wat?Math.max(1,Math.max(...wat)/1000*5):1,grid:{display:false},ticks:{color:c.water,callback:v=>v.toFixed(0)},title:{display:!!wat,text:'water · m³ per hour (legacy trigger, today)',color:c.water}}}}});
+    $('s2_cy').ondblclick=()=>{chY.resetZoom();};
+    if(keep)chY.zoomScale('x',keep,'none');
+    const nOff=cps.filter(q=>q.official).length;
+    $('s2_ytag').textContent=`${HUBS[W.hub].name} · calendar ${R.base.yrCal} · ${g.name} · ${nOff} official peak hours${nOff<10?' + '+(10-nOff)+' estimated from the site’s hottest days':''}`;
+    $('s2_ylg').innerHTML=[[c.chiller,'Facility demand — left axis whole facility, right axis the same line read as mechanical cooling from 0 (base '+f1(baseFlat)+' MW = the year’s lowest IT + ancillary + pumps)','line'],[c.mech,'Annual peak today','line'],
+      [c.chiller,'Grid coincident peak — before',''],[c.water,'Grid coincident peak — with the event','']].concat(wat?[[c.waterT,'Cooling water today — legacy trigger, m³ per hour (far right axis)','']]:[])
+      .map(([col,t,k])=>`<span class="lgi" style="cursor:default"><i class="swatch${k?' line':''}" style="background:${col}"></i>${t}</span>`).join('')+
+      [[c.amb,'Ambient dry-bulb (right axis) — click to show/hide','db'],[c.wb,'Wet-bulb (right axis) — click to show/hide','wb']]
+      .map(([col,t,k])=>`<span class="lgi${S2P_AMB[k]?'':' off'}" data-amb="${k}"><i class="swatch line" style="background:${col}"></i>${t}</span>`).join('');
+    $('s2_ylg').querySelectorAll('[data-amb]').forEach(sp=>sp.addEventListener('click',()=>{S2P_AMB[sp.dataset.amb]=!S2P_AMB[sp.dataset.amb]; drawYear();}));
+    const worst=cps.reduce((a,q)=>fac[q.idx]>fac[a.idx]?q:a,cps[0]);
+    $('s2_ynote').innerHTML=`Ten hours the grid cares about, on the simulated year. Red dots are the facility as it runs today at those hours; blue diamonds are the same hours with the event delivered from the store (the same store spent over the same window, priced on that hour's own duty and weather). `+
+      `The hardest coincident peak for this site was <b>${idxLbl(worst.idx)}</b>: ${f1(fac[worst.idx])} → ${f1(after(worst.idx))} MW. `+
+      (nOff?`Official hours: ${g.src}. `:`No published ${R.base.yrCal} coincident-peak list for this grid — all ten hours are estimated from the site's hottest days. `)+
+      (wet?(function(){const t=cps.reduce((s,q)=>s+(q.h2o?q.h2o.tot:0),0), ad=cps.reduce((s,q)=>s+(q.h2o?q.h2o.added:0),0), n=cps.filter(q=>q.h2o&&q.h2o.added>1).length;
+        return `<b>Water.</b> With the pads triggered through every event regardless of ambient, the ten events spend ${Math.round(t/1000).toLocaleString('en-US')} m³ of water in total, ${Math.round(ad/1000).toLocaleString('en-US')} m³ of it beyond what the legacy ${Math.round(FOG_C*9/5+32)} °F trigger would spend on those hours anyway (${n} of the ten days are below the trigger). Hover a blue diamond for that day's figure; the pale blue trace is the site's water today, hour by hour, on the far right axis. `;})():'')+
+      `<b>Click any peak marker to make that day the event canvas.</b> Drag across the chart to zoom into a week · Ctrl + wheel to zoom · Shift + drag to pan · double-click to reset.`;
+  }
+
+  // ---------------------------------------------------------------- wiring
+  let wired=false;
+  function wire(){ if(wired)return; wired=true;
+    $('s2_istor').addEventListener('input',e=>{Z.storTonh=+e.target.value; $('s2_vstor').textContent=fInt(Z.storTonh)+' ton-h';});
+    $('s2_istor').addEventListener('change',e=>{Z.storTonh=+e.target.value; run();});
+    $('s2_back').addEventListener('click',()=>{Z.day=null; Z.dayCp=null; Z.storTonh=null; run();});
+    $('s2_yreset').addEventListener('click',()=>{if(chY)chY.resetZoom();});
+    const gs=$('s2_igrid'); gs.innerHTML=Object.keys(GRIDS).map(k=>`<option value="${k}">${GRIDS[k].name}</option>`).join('');
+    gs.addEventListener('change',e=>{Z.grid=e.target.value; W.s2grid=Z.grid; Z.day=null; Z.dayCp=null; Z.storTonh=null; run();});
+    $('s2_istart').addEventListener('input',e=>{Z.start=+e.target.value; W.s2start=Z.start; $('s2_vstart').textContent=hh(Z.start); Z.storTonh=null; run();});
+    $('s2_idur').addEventListener('input',e=>{Z.dur=+e.target.value; W.s2dur=Z.dur; $('s2_vdur').textContent=Z.dur+' h'; Z.storTonh=null; run();});
+  }
+  function show(){ wire();
+    Z.start=W.s2start||14; Z.dur=W.s2dur||4; Z.grid=W.s2grid||SITE_GRID[W.hub]||'PJM'; Z.day=null; Z.dayCp=null; Z.storTonh=null;
+    $('s2_igrid').value=Z.grid; $('s2_istart').value=String(Z.start); $('s2_vstart').textContent=hh(Z.start); $('s2_idur').value=String(Z.dur); $('s2_vdur').textContent=Z.dur+' h';
+    run(); }
+  function refresh(){ if(LAST&&STAGE==='res'&&W.mode==='s2p')paint(); }
+  return {show,run,refresh,GRIDS,SITE_GRID,get last(){return LAST;},Z};
+})();
+
+let STEP=0; const NSTEP=9;
+// v145 THE FORK. Steps 6 and 7 belong to one branch each: 6 (the event) to Speed to Power, 7 (the
+// IceBrick tie-in) to Power Envelope. goStep walks over the one that is not on the chosen path.
+W.mode=W.mode||'pe'; W.s2start=14; W.s2dur=4; W.s2grid=null;
+const stepVisible=n=>n===6?W.mode==='s2p':(n===7?W.mode==='pe':true);
+function setMode(m){ W.mode=m; $('mode_pe').classList.toggle('sel',m==='pe'); $('mode_s2p').classList.toggle('sel',m==='s2p'); recap(); dots(); }
+$('mode_pe').addEventListener('click',()=>{setMode('pe'); goStep(1);});
+$('mode_s2p').addEventListener('click',()=>{setMode('s2p'); goStep(1);});
+{const hh=h=>String(h).padStart(2,'0')+':00';
+ $('s2w_istart').addEventListener('input',e=>{W.s2start=+e.target.value; $('s2w_vstart').textContent=hh(W.s2start); recap();});
+ $('s2w_idur').addEventListener('input',e=>{W.s2dur=+e.target.value; $('s2w_vdur').textContent=W.s2dur+' h'; recap();});
+ const gs=$('s2w_igrid'); gs.innerHTML=Object.keys(S2P.GRIDS).map(k=>`<option value="${k}">${S2P.GRIDS[k].name}</option>`).join('');
+ gs.addEventListener('change',e=>{W.s2grid=e.target.value; $('s2w_vgrid').textContent=S2P.GRIDS[W.s2grid].name; recap();});}
+function syncS2W(){ const g=W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'; $('s2w_igrid').value=g; $('s2w_vgrid').textContent=S2P.GRIDS[g].name;
+  $('s2w_istart').value=String(W.s2start); $('s2w_vstart').textContent=String(W.s2start).padStart(2,'0')+':00'; $('s2w_idur').value=String(W.s2dur); $('s2w_vdur').textContent=W.s2dur+' h'; }
 
 (function buildHubs(){
   // -- interactive US map -------------------------------------------------
@@ -2650,7 +3157,7 @@ function syncHub(){
 function pickHub(k){
   if(!HUBS[k])return;
   W.hub=k; syncHub(); recap();
-  setTimeout(()=>goStep(1),300);
+  setTimeout(()=>goStep(2),300);
 }
 
 (function buildCasc(){
@@ -2665,14 +3172,15 @@ function pickHub(k){
     [...$('cascgrid').children].forEach(x=>x.classList.toggle('sel',x===o));
     const wm=$('wmwrap');
     if(W.cascade===2){ if(wm)wm.style.display=''; recap(); }   // adiabatic: ask the goal before moving on
-    else { if(wm)wm.style.display='none'; W.wmode='power'; recap(); setTimeout(()=>goStep(3),260); }
+    else { if(wm)wm.style.display='none'; W.wmode='power'; recap(); setTimeout(()=>goStep(4),260); }
   });
   const wg=$('wmgrid');
   if(wg)wg.addEventListener('click',e=>{
     const o=e.target.closest('.opt'); if(!o)return;
     W.wmode=o.dataset.w;
+    {const c=$('i_nfcap'); const v=c?parseFloat(c.value):NaN; W.nfCap=isFinite(v)&&v>=0?v:NF_CAP_DEFAULT;}
     [...wg.children].forEach(x=>x.classList.toggle('sel',x===o));
-    recap(); setTimeout(()=>goStep(3),260);
+    recap(); setTimeout(()=>goStep(4),260);
   });
   const pg=$('padgrid');
   if(pg)pg.addEventListener('click',e=>{
@@ -2735,7 +3243,7 @@ function applyHall(){
     const o=e.target.closest('.opt'); if(!o)return;
     setHall(o.dataset.h);
     [...$('hallgrid').children].forEach(x=>x.classList.toggle('sel',x===o));
-    setTimeout(()=>goStep(4),260);
+    setTimeout(()=>goStep(5),260);
   });
 })();
 
@@ -2923,7 +3431,7 @@ function recap(){
   const h=HUBS[W.hub], c=CASCADES[W.cascade];
   $('w_recap').innerHTML=`<span><b>${h.name}</b></span><span><b>${W.IT} MW</b> IT</span>`+
     `<span><b>${c.name}</b></span><span>${W.hall==='air'?'hall':'racks'} <b>${tA1(W.RS)}</b>`+
-    (rsHi()-W.RS>=0.01?` \u2192 <b>${tA1(rsHi())}</b>`:'')+` \u00b7 FWS <b>${tA1(W.FWS)}</b></span>`+
+    ((W.mode!=='s2p'&&rsHi()-W.RS>=0.01)?` \u2192 <b>${tA1(rsHi())}</b>`:'')+` \u00b7 FWS <b>${tA1(W.FWS)}</b></span>`+
     (W.hdr>0?`<span>air recirc <b>+${tD1(W.hdr)}</b></span>`:'');
   if($('recapbox'))$('recapbox').innerHTML=[
     ['Location',`${h.name} — ${h.sub}`,h.clim],
@@ -2934,18 +3442,21 @@ function recap(){
       (W.peMode==='grid'&&W.gc>0)
         ? 'Top to Bottom \u2014 the IT nameplate was derived from the grid connection'
         : 'Bottom to Top \u2014 the substation feed is derived from the IT nameplate'],
-    ['Cooling cascade',c.name+(W.cascade===2?(W.wmode==='water'?' \u00b7 water-optimised':' \u00b7 power-optimised'):''),c.short],
+    ['Run mode',W.mode==='s2p'?'Speed to Power':'Power Envelope Optimization',
+      W.mode==='s2p'?`demand-response event ${String(W.s2start).padStart(2,'0')}:00 for ${W.s2dur} h \u00b7 ${S2P.GRIDS[W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'].name} coincident peaks \u00b7 store sized to the night before`
+                    :'IceBrick sized to the design week \u2014 IT capacity freed under the same connection'],
+    ['Cooling cascade',c.name+(W.cascade===2?(W.wmode==='water'?' \u00b7 water-optimised':W.wmode==='night'?' \u00b7 night-fogging':' \u00b7 power-optimised'):''),c.short],
     ['Data hall',HALLS[W.hall].name,HALLS[W.hall].short],
     [W.hall==='air'?'Chilled water to the hall':'Supply to the racks',tA1(W.RS),
       W.hall==='air'
         ? `no CDU in the loop, so this is the facility water itself \u2014 and that loop is what the before analysis runs on`
         : `what the CDU delivers to the cold plates today \u2014 across a ${tD1(W.cduap)} `+
-          `approach that means the plant holds ${tA1(W.FWS)} of facility water, and that loop is what the before analysis runs on`],
-    ['Maximum allowable \u00b7 SLA',tA1(rsHi()),
+          `approach that means the plant holds ${tA1(W.FWS)} of facility water, and that loop is what the ${W.mode==='s2p'?'whole study':'before analysis'} runs on`],
+    ...(W.mode==='s2p'?[]:[['Maximum allowable \u00b7 SLA',tA1(rsHi()),
       rsHi()-W.RS<0.01
         ? `level with today \u2014 IceBrick is priced on peak shaving alone, no Spike Shield warm-loop credit taken`
         : `${tD1(rsHi()-W.RS)} warmer${W.hall==='air'?'':' at the rack'}, a ${tA1(W.FWShi)} facility loop, held to zero `+
-          `deviation every hour by Spike Shield (DCIM-driven, SLA-backed) \u2014 the entire with-IceBrick case runs here`],
+          `deviation every hour by Spike Shield (DCIM-driven, SLA-backed) \u2014 the entire with-IceBrick case runs here`]]),
     ['Ancillary (non-cooling)',(W.oh*100).toFixed(1).replace(/\.0$/,'')+'% of IT',`a hard floor of ${(1+W.oh).toFixed(2)} on your PUE before any cooling energy at all`],
     ['Air recirculation factor',W.hdr>0?'+'+tD1(W.hdr):'none',
       W.hdr>0
@@ -2962,17 +3473,20 @@ function recap(){
 }
 
 function dots(){
-  $('wizdots').innerHTML=[...Array(NSTEP).keys()].map(i=>
+  $('wizdots').innerHTML=[...Array(NSTEP).keys()].filter(stepVisible).map(i=>
     `<i class="${i===STEP?'on':(i<STEP?'done':'')}"></i>`).join('');
 }
 function goStep(n){
+  const dir=n>=STEP?1:-1; n=Math.max(0,Math.min(NSTEP-1,n));
+  while(!stepVisible(n)&&n>0&&n<NSTEP-1)n+=dir;
   STEP=Math.max(0,Math.min(NSTEP-1,n));
+  if(STEP===6)syncS2W();
   document.querySelectorAll('.qstep').forEach(q=>q.classList.toggle('on',+q.dataset.q===STEP));
   const wi=$('wizintro'); if(wi)wi.style.display=(STEP===0?'':'none');
   dots();
-  if(STEP===1&&typeof pePaint==='function')setTimeout(pePaint,30);
+  if(STEP===2&&typeof pePaint==='function')setTimeout(pePaint,30);
   $('w_prev').disabled=(STEP===0);
-  $('w_next').style.visibility=((STEP===NSTEP-1||STEP===1)?'hidden':'visible');
+  $('w_next').style.visibility=((STEP===NSTEP-1||STEP===2||STEP===0)?'hidden':'visible');
   $('w_next').textContent=(STEP===NSTEP-2?'Review my answers →':'Next →');
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -3040,7 +3554,7 @@ $('go_run').addEventListener('click',runAnalysis);
 //  because two builds can price the same inputs slightly differently.
 function parseRunCode(t){
   t=String(t||'').replace(/[\u2010-\u2015\u2212]/g,'-').toUpperCase();
-  const m=t.match(/IB8760-(\d+)-([A-Z]{3,4})-IT([\d.]+)-HC(\d+)-C([123])-(AIR|LIQ)-RS([\d.]+)-SLA([\d.]+)-AP([\d.]+)-FWS([\d.]+)-HI([\d.]+)-OH(\d+)(?:-HD([\d.]+))?(?:-CS(\d+))?(?:-DS(\d+))?-N(\d+)-MU([\d.]+)(?:-GC([\d.]+))?(?:-PP(\d+))?(?:-HT(\d+))?(?:-(WO))?(?:-PD([CDB]))?/);
+  const m=t.match(/IB8760-(\d+)-([A-Z]{3,4})-IT([\d.]+)-HC(\d+)-C([123])-(AIR|LIQ)-RS([\d.]+)-SLA([\d.]+)-AP([\d.]+)-FWS([\d.]+)-HI([\d.]+)-OH(\d+)(?:-HD([\d.]+))?(?:-CS(\d+))?(?:-DS(\d+))?-N(\d+)-MU([\d.]+)(?:-GC([\d.]+))?(?:-PP(\d+))?(?:-HT(\d+))?(?:-(WO))?(?:-NF([\d.]+))?(?:-PD([CDB]))?(?:-S2P(\d+)X(\d+)([A-Z]+))?/);
   if(!m) return {err:'That does not read as an IceBrick simulation ID — it should start with IB8760- and carry all its fields.'};
   const hub=m[2].toLowerCase();
   if(!HUBS[hub]) return {err:'Unknown site code "'+m[2]+'" — this build knows '+Object.keys(HUBS).map(k=>k.toUpperCase()).join(', ')+'.'};
@@ -3048,8 +3562,8 @@ function parseRunCode(t){
   // and parseFloat shrugs that off where +'1.25.' turns the whole run into NaN
   const F=x=>parseFloat(x);
   const o={ver:m[1], hub, IT:F(m[3]), hc:F(m[4])/100, cascade:+m[5], hall:m[6]==='AIR'?'air':'liquid',
-           RS:F(m[7]), RSmax:F(m[8]), cduap:F(m[9]), FWS:F(m[10]), FWShi:F(m[11]), oh:F(m[12])/100, hdr:m[13]!=null?F(m[13]):0, chS:m[14]!=null?Math.round(F(m[14]))%24:23, chE:m[15]!=null?Math.round(F(m[15])):10, N:F(m[16]), mult:F(m[17]), gc:m[18]!=null?F(m[18]):0, pePct:m[19]!=null?F(m[19]):80, hdT:m[20]!=null?F(m[20]):90, wmode:(m[21]==='WO'&&+m[5]===2)?'water':'power',
-           pads:(m[22]==='C'?'cond':(m[22]==='D'?'dry':'both'))};
+           RS:F(m[7]), RSmax:F(m[8]), cduap:F(m[9]), FWS:F(m[10]), FWShi:F(m[11]), oh:F(m[12])/100, hdr:m[13]!=null?F(m[13]):0, chS:m[14]!=null?Math.round(F(m[14]))%24:23, chE:m[15]!=null?Math.round(F(m[15])):10, N:F(m[16]), mult:F(m[17]), gc:m[18]!=null?F(m[18]):0, pePct:m[19]!=null?F(m[19]):80, hdT:m[20]!=null?F(m[20]):90, wmode:(m[21]==='WO'&&+m[5]===2)?'water':((m[22]!=null&&+m[5]===2)?'night':'power'), nfCap:(m[22]!=null?F(m[22]):NF_CAP_DEFAULT),
+           pads:(m[23]==='C'?'cond':(m[23]==='D'?'dry':'both')), mode:(m[24]!=null?'s2p':'pe'), s2start:(m[24]!=null?+m[24]:14), s2dur:(m[25]!=null?+m[25]:4), s2grid:(m[26]||null)};
   if(!(o.IT>=1&&o.IT<=1000)) return {err:'IT nameplate '+o.IT+' MW is outside the 1–1000 MW range.'};
   if(!(o.N>=1&&o.N<=50))     return {err:'Design return period N'+o.N+' is outside 1–50.'};
   if(!(o.mult>=1&&o.mult<=4))return {err:'Storage-nights multiplier '+o.mult+' is outside 1–4.'};
@@ -3066,8 +3580,9 @@ function runFromCode(){
   W.oh=o.oh; W.hdr=o.hdr||0; W.chS=o.chS; W.chE=o.chE; W.N=o.N; W.mult=o.mult;
   W.gc=o.gc||0; W.pePct=o.pePct||80; W.peMode=(o.gc>0?'grid':'it');
   W.hdT=o.hdT||90; if($('i_hdt'))$('i_hdt').value=String(W.hdT);
-  W.wmode=o.wmode||'power';
+  W.wmode=o.wmode||'power'; W.nfCap=(o.nfCap!=null?o.nfCap:NF_CAP_DEFAULT);
   W.pads=o.pads||'both';
+  W.mode=o.mode||'pe'; W.s2start=o.s2start||14; W.s2dur=o.s2dur||4; W.s2grid=(o.s2grid&&S2P.GRIDS[o.s2grid])?o.s2grid:null; setMode(W.mode);
   {const wm=$('wmwrap'); if(wm)wm.style.display=(W.cascade===2?'':'none');
    const wg=$('wmgrid'); if(wg)[...wg.children].forEach(x=>x.classList.toggle('sel',x.dataset.w===W.wmode));}
   if($('i_pp1'))$('i_pp1').value=String(W.pePct);
@@ -3153,6 +3668,13 @@ function openResults(){
   hideEl('nextlevel'); hideEl('act_pdf');
   ['act5','act6','act7','act8','act9'].forEach(a=>$(a).classList.remove('in'));
   window.scrollTo({top:0,behavior:'auto'});
+  // v145: Speed to Power shows its own results on the same baseline; the envelope chapters stay hidden
+  const s2p=(W.mode==='s2p');
+  ['respanel','act1','act2','act3','act4'].forEach(id=>{const e=$(id); if(e)e.style.display=s2p?'none':'';});
+  $('v_s2p').style.display=s2p?'':'none';
+  $('pdfnote').textContent=s2p?'The Speed-to-Power study: configuration, the commitment, the ten coincident peaks, the event day and the sizing curve, one document. You will be asked to name the run first.':'The whole study \u2014 the baseline chapters and the IceBrick chapters, one document. You will be asked to name the run first.';
+  if(s2p){ $('res_eyebrow').textContent='Speed to Power'; $('res_intro').textContent=`${HUBS[W.hub].name} · ${W.IT} MW of IT · ${CASCADES[W.cascade].name} · the year is run, the event is priced on the day the grid peaked.`;
+    S2P.show(); showEl('act_pdf'); paintRunCode(); return; }
   syncResWater();
   paintBaseline(); drawYear(); paintDay(); drawDay();
   ['act1','act2','act3','act4'].forEach((a,i)=>setTimeout(()=>$(a).classList.add('in'),120+i*260));
@@ -3779,8 +4301,15 @@ function paintRetire(di,st){
   if(b.water>=1){
     $('d_h2o_w').style.display='';
     // WUE leads in the big figure; the volume saved sits beneath it in the small line.
-    $('d_h2o').textContent=wSave>1 ? `${wueB.v} → ${wueI.v} ${wueB.u}` : `${wueB.v} ${wueB.u} (unchanged)`;
-    $('d_h2o_s').textContent=wSave>1
+    const nfRun=!!(R.p.nf), wAdd=st.waterI-b.water;
+    $('d_h2o').textContent=(wSave>1||(nfRun&&wAdd>1)) ? `${wueB.v} → ${wueI.v} ${wueB.u}` : `${wueB.v} ${wueB.u} (unchanged)`;
+    $('d_h2o_s').textContent= nfRun&&wAdd>1
+      ? `night-fogging: +${fmtInt(wConv(wAdd))} ${wUnit()}/yr added — ${fmtInt(wConv(b.water))} → ${fmtInt(wConv(st.waterI))} ${wUnit()}/yr `+
+        `(site ΔWUE +${(st.dWue||0).toFixed(2)} L/kWh against your cap of ${(st.nfCap!=null?st.nfCap:NF_CAP_DEFAULT).toFixed(2)}`+
+        (st.wueRelaxed!=null&&st.wueRelaxed<1?`, ceiling relaxed to ${(100*st.wueRelaxed).toFixed(0)}% of full depth to meet it`:``)+`): `+
+        `the pads run ${fmtInt(st.wfcHrs||0)} night hours on the dry coolers (${fmtInt(wConv(st.wfcWater||0))} ${wUnit()}) so the `+
+        `compressors stand down and the opened room charges ice, and ${fmtInt(st.sprayHrs||0)} hours by day on the condensers`
+      : wSave>1
       ? `${fmtInt(wConv(wSave))} ${wUnit()}/yr saved — ${fmtInt(wConv(b.water))} → ${fmtInt(wConv(st.waterI))} ${wUnit()}/yr `+
         `(−${(100*wSave/b.water).toFixed(0)}%): `+(R.p.cascade===2
           ? (R.p.wmode==='water'
@@ -3789,7 +4318,9 @@ function paintRetire(di,st){
             : `dynamic setpoint — no fixed trigger: the pads run in the ${fmtInt(st.sprayHrs||0)} hours where a gallon `+
               `buys the most kilowatts, and the fog bill is capped at what your plant's own 90 °F trigger spends today`+
               ((st.wfcHrs||0)>0?` — plus night wet free cooling on ${fmtInt(st.wfcHrs)} charging hours `+
-              `(${fmtInt(wConv(st.wfcWater||0))} ${wUnit()}): the pads carry the loop toward wet-bulb while the opened room charges ice`:``))
+              `(${fmtInt(wConv(st.wfcWater||0))} ${wUnit()}): the pads carry the loop toward wet-bulb while the opened room charges ice`
+              :(st.wueFallback?` — night wet free cooling was tried and set aside: on this climate the water it needs exceeds the `+
+              `0.4 L/kWh allowance for the capacity it frees, so the pads stay on the condensers by day and the nights charge dry`:``)))
           : `the hours IceBrick takes off the compressors in the hot band are exactly the hours this cascade `+
             `sprays water to survive`)
       : `this run's schedule leaves the evaporative duty where it was — ${fmtInt(wConv(b.water))} ${wUnit()}/yr before and after`;
@@ -4326,6 +4857,7 @@ function drawCV(){
 //  REFRESH / RESTART
 // ============================================================================
 function refreshAll(){
+  try{ S2P.refresh(); }catch(e){}
   if(STAGE!=='res')return;
   try{
     syncResWater();
@@ -4433,8 +4965,8 @@ async function buildPDF(){
   const cvWas=CV_OPEN;
   if(!cvWas){ CV_OPEN=true; hideEl('cv_ask'); showEl('cv_wrap'); try{drawCV();}catch(e){} await sleep(80); }
   const shots={};
-  ['cYear','cDay','cCV','cB1','cB2','cND','cMon'].forEach(id=>{shots[id]=pSnap(id);});
-  const legs={}; ['y_legend','dd_legend','cv_legend','b1_legend','b2_legend','nd_legend','mon_legend']
+  ['cYear','cDay','cCV','cB1','cB2','cND','cMon','s2_cy','s2_cv','s2_cs'].forEach(id=>{shots[id]=pSnap(id);});
+  const legs={}; ['y_legend','dd_legend','cv_legend','b1_legend','b2_legend','nd_legend','mon_legend','s2_ylg','s2_lg']
     .forEach(id=>{legs[id]=pLegend(id);});
   if(!cvWas){ CV_OPEN=false; showEl('cv_ask'); hideEl('cv_wrap'); }
 
@@ -4536,7 +5068,21 @@ async function buildPDF(){
     logo:(document.querySelector('.ilogo')||{}).src||null,
     run:RUN_NAME||'',
     code:runCode(),
-    next:!!NEXTOPEN
+    next:!!NEXTOPEN,
+    // v146 speed to power
+    s2p:(W.mode==='s2p'&&S2P.last)?(function(){const L=S2P.last, hh=h=>String(h).padStart(2,'0')+':00', f1=x=>(Math.round(x*10)/10).toFixed(1), fI=x=>Math.round(x).toLocaleString('en-US');
+      const ev=hh(L.a)+'\u2013'+hh(L.b), grid=S2P.GRIDS[W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'].name;
+      return {ev,grid,dur:L.b-L.a,
+        cfg:[['Run mode','Speed to Power \u2014 acquire power flexibility'],['Demand-response window',ev+' ('+(L.b-L.a)+' h) \u00b7 discharge ramps up over 7 min before it, stops at its end'],
+             ['Grid \u00b7 coincident peaks',grid],['Operational limit',f1(L.pr.lim)+' MW \u2014 '+(L.pr.isDesign?'the design-day peak':'the year\u2019s peak')],
+             ['Event day',L.pr.isDesign?'typical DR day \u2014 the ambient regime averaged hour by hour across the ten coincident-peak days':L.pr.date+(S2P.Z.dayCp?' \u00b7 '+S2P.Z.dayCp:'')]],
+        kpi:[['Committed curtailment \u00b7 firm',f1(L.firm)+' MW',pTxt('s2_firm_s'),'zap'],['Energy shed per event',f1(L.mwh)+' MWh',pTxt('s2_mwh_s'),'activity'],
+             ['IceBrick storage',fI(L.tonh)+' ton-h',pTxt('s2_stor_s'),'battery'],['Li-ion equivalent',f1(L.mwh)+' MWh \u00b7 '+f1(L.hr[L.pkH].red)+' MW',pTxt('s2_li_s'),'box']],
+        delt:[['Peak-hour reduction',pTxt('s2_pk'),pTxt('s2_pk_s')+' \u00b7 '+pTxt('s2_dir')+' displaced at the peak kW/ton \u00b7 '+pTxt('s2_bon')+' bonus on the remaining chillers','sun'],
+              ['Peak kW/ton used',pTxt('s2_kwt'),pTxt('s2_kwt_s'),'trend'],['Charging plant to refill overnight',pTxt('s2_chg'),pTxt('s2_chg_s'),'moon'],
+              ['Storage per kW committed',pTxt('s2_ratio'),pTxt('s2_ratio_s'),'server']].concat(L.h2o?[['Water in the event · adiabatic pads',pTxt('s2_h2o'),pTxt('s2_h2o_s'),'drop']]:[]),
+        bon:pTxt('s2_bon_s'), ytag:pTxt('s2_ytag'), ynote:pTxt('s2_ynote').replace(/Click any peak marker.*$/,''), ctag:pTxt('s2_ctag'), dtitle:(L.pr.isDesign?'A typical DR-event day, with the event':'Your chosen day with the event'), note:pTxt('s2_note'),
+        stag:pTxt('s2_stag'), snote:pTxt('s2_snote')};})():null
   };
 
   if(wasTheme!=='light'){ S.theme=wasTheme; applyTheme(); }
@@ -4712,8 +5258,8 @@ async function buildPDF(){
   doc.setFont('helvetica','normal'); doc.setFontSize(13); doc.setTextColor(120,190,225);
   T((D.site||'')+(D.siteSub?'  ·  '+D.siteSub:''),M,_cy); _cy+=24;
   doc.setFontSize(10); doc.setTextColor(150,170,185);
-  T([D.it+' IT  ·  '+D.casc,
-            'FWS '+D.fws+(D.fwsUp>=0.01?'  →  '+D.fwshi+'  (Spike Shield)':'  (unchanged)'),
+  T([D.it+' IT  ·  '+D.casc+(D.s2p?'  ·  Speed to Power · DR event '+D.s2p.ev:''),
+            'FWS '+D.fws+((!D.s2p&&D.fwsUp>=0.01)?'  →  '+D.fwshi+'  (Spike Shield)':(D.s2p?'':'  (unchanged)')),
             'CDU approach '+D.cdu+'  ·  ancillary '+D.oh+'  ·  load '+D.hc+(D.hdrK>0?'  ·  air recirc +'+tD1(D.hdrK):''),
             'Chiller modelled: YORK YVFA0309EVK46AAVBXO',
             'Generated '+new Date().toLocaleString()],M,_cy);
@@ -4733,14 +5279,14 @@ async function buildPDF(){
     ['Cooling cascade',D.casc],
     ['Design load as a fraction of installed IT',D.hc],
     ['Facility water supply temperature — today',D.fws],
-    ['Facility water supply temperature — with Spike Shield',
-      D.fwsUp<0.01?D.fws+' (unchanged)':D.fwshi],
+    ...(D.s2p?[]:[    ['Facility water supply temperature — with Spike Shield',
+      D.fwsUp<0.01?D.fws+' (unchanged)':D.fwshi]]),
     ['CDU approach',D.cdu],
     ['Ancillary (non-cooling) overhead',D.oh],
     ['Air recirculation factor',D.hdrTxt],
     ['Design-day return period',D.nTag],
     ['Chiller modelled',D.chl]
-  ]);
+  ].concat(D.s2p?D.s2p.cfg:[]));
   h2('The chiller behind every compressor hour');
   para('YORK YVFA0309EVK46AAVBXO — 349.0 ton.R at 107 °F, 435.3 kW, EER 9.621, IPLV.IP 17.37. '+
        'R-134a air-cooled VSD screw, semi-hermetic. This single machine is used for every compressor hour in the '+
@@ -4749,6 +5295,22 @@ async function buildPDF(){
        'lift-normalised, then modified by a two-dimensional part-load multiplier so that a lightly loaded plant on '+
        'a cool night and a fully loaded plant on a hot afternoon are each given their own true COP.');
 
+  // ---- speed to power (v146) ----------------------------------------------
+  if(D.s2p){
+    newPage(); h1('Speed to Power \u2014 the commitment');
+    tag(D.s2p.ctag);
+    kpis(D.s2p.kpi);
+    rule();
+    kpis(D.s2p.delt);
+    para('Every displaced ton-hour is valued at the chillers\u2019 worst work point of the discharge; the cooling that stays on the chillers earns a lighter lift (the ice takes the last share of the loop \u0394T) and the '+CHILLER.short+'\u2019s own part-load point. The commitment is the smallest reduction inside the window, because the utility pays for what can be delivered in every hour, not the best one.',9.4);
+    newPage(); h1('The year, and the hours the grid actually peaked');
+    tag(D.s2p.ytag); chart(shots.s2_cy,300); legend(legs.s2_ylg); para(D.s2p.ynote);
+    newPage(); h1(D.s2p.dtitle||'The event day');
+    tag(D.s2p.ctag); chart(shots.s2_cv,330); legend(legs.s2_lg); para(D.s2p.note);
+    newPage(); h1('How much store is worth buying');
+    tag(D.s2p.stag); chart(shots.s2_cs,260); para(D.s2p.snote);
+  }
+  if(!D.s2p){
   // ---- baseline load profile ---------------------------------------------
   newPage();
   h1('Baseline load profile');
@@ -4845,9 +5407,16 @@ async function buildPDF(){
     para(D.cvNote);
   }
 
+  }
   // ---- method ------------------------------------------------------------
   newPage();
   h1(D.next?'Appendix F — Method & assumptions':'Method & assumptions');
+  if(D.s2p) para('Speed to Power. The baseline year is the same 8,760-hour run. The event day is the typical DR day - the ambient regime averaged hour by hour across the ten coincident-peak days and their nights before - or any of those days the reader picks; '+
+       'the operational limit is the year\u2019s peak. The store is refilled on IceBrick\u2019s own ice circuit in one continuous block of the coldest hours of the night before, '+
+       'each hour up to the room under the operational limit at the ice circuit\u2019s COP (5 K colder than the facility loop, round-trip loss '+CHG_LOSS+'). Discharge ramps up linearly over 7 minutes before the '+
+       'window, holds a flat facility cut through it, and stops at its end. In every hour the store takes u kWth off the chillers; the remaining duty is priced by the same datasheet part-load curve as the '+
+       'baseline, at a lift reduced by the loop \u0394T share the ice carries. Firm curtailment is the minimum hourly reduction inside the window; the knee of the firm-versus-store curve is the elbow rule. '+
+       'Coincident peaks are the published 2025 hours for PJM, ERCOT, NYISO and ISO-NE; other grids, and the rest of the ten, are the site\u2019s hottest days.');
   para('Weather. Eight thousand seven hundred and sixty hours are synthesised from the monthly climate normals of '+
        'the selected hub — dry bulb and wet bulb, with a diurnal swing and a day-to-day persistence term. Fifty '+
        'such years are generated; the design day is drawn from the return-period statistics of that record, and the '+
@@ -4995,7 +5564,9 @@ function runCode(){
    .concat((W.pePct!==80||(W.peMode==='grid'&&W.gc>0))?['PP'+n0(W.pePct)]:[])
    .concat((W.hdr>0&&W.hdT!==90)?['HT'+n0(W.hdT)]:[])
    .concat((W.cascade===2&&W.wmode==='water')?['WO']:[])
+   .concat((W.cascade===2&&W.wmode==='night')?['NF'+(Math.round((W.nfCap!=null?W.nfCap:NF_CAP_DEFAULT)*100)/100)]:[])
    .concat((W.cascade===2&&W.pads&&W.pads!=='both')?['PD'+(W.pads==='cond'?'C':'D')]:[])
+   .concat(W.mode==='s2p'?['S2P'+W.s2start+'X'+W.s2dur+(W.s2grid||S2P.SITE_GRID[W.hub]||'PJM')]:[])
    .join('-');
 }
 
@@ -5802,7 +6373,7 @@ function rxKick(){
 }
 (function(){
   const cg=$('cascgrid'); if(cg)cg.addEventListener('click',()=>setTimeout(rxKick,120));
-  const _gs=goStep; goStep=function(n){_gs(n); if(STEP===5)rxKick();};
+  const _gs=goStep; goStep=function(n){_gs(n); if(STEP===7)rxKick();};
   const _sr=syncRack; syncRack=function(){_sr(); rxUpdate();};
   window.addEventListener('resize',()=>{if(RX.cache[RX.key])rxPaint();});
 })();
