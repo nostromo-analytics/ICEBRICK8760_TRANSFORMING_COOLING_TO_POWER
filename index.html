@@ -1584,7 +1584,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='155';
+const VER='157';
 // v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
 // stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
 // water over total annual IT kWh - set by the operator. Default cap below.
@@ -3051,9 +3051,9 @@ const S2P=(()=>{
     $('s2_back').addEventListener('click',()=>{Z.day=null; Z.dayCp=null; Z.storTonh=null; run();});
     $('s2_yreset').addEventListener('click',()=>{if(chY)chY.resetZoom();});
     const gs=$('s2_igrid'); gs.innerHTML=Object.keys(GRIDS).map(k=>`<option value="${k}">${GRIDS[k].name}</option>`).join('');
-    gs.addEventListener('change',e=>{Z.grid=e.target.value; W.s2grid=Z.grid; Z.day=null; Z.dayCp=null; Z.storTonh=null; run();});
-    $('s2_istart').addEventListener('input',e=>{Z.start=+e.target.value; W.s2start=Z.start; $('s2_vstart').textContent=hh(Z.start); Z.storTonh=null; run();});
-    $('s2_idur').addEventListener('input',e=>{Z.dur=+e.target.value; W.s2dur=Z.dur; $('s2_vdur').textContent=Z.dur+' h'; Z.storTonh=null; run();});
+    gs.addEventListener('change',e=>{Z.grid=e.target.value; W.s2grid=Z.grid; Z.day=null; Z.dayCp=null; Z.storTonh=null; run(); try{paintRunCode();}catch(x){}});
+    $('s2_istart').addEventListener('input',e=>{Z.start=+e.target.value; W.s2start=Z.start; $('s2_vstart').textContent=hh(Z.start); Z.storTonh=null; run(); try{paintRunCode();}catch(x){}});
+    $('s2_idur').addEventListener('input',e=>{Z.dur=+e.target.value; W.s2dur=Z.dur; $('s2_vdur').textContent=Z.dur+' h'; Z.storTonh=null; run(); try{paintRunCode();}catch(x){}});
   }
   function show(){ wire();
     Z.start=W.s2start||14; Z.dur=W.s2dur||4; Z.grid=W.s2grid||SITE_GRID[W.hub]||'PJM'; Z.day=null; Z.dayCp=null; Z.storTonh=null;
@@ -3067,7 +3067,7 @@ let STEP=0; const NSTEP=9;
 // v145 THE FORK. Steps 6 and 7 belong to one branch each: 6 (the event) to Speed to Power, 7 (the
 // IceBrick tie-in) to Power Envelope. goStep walks over the one that is not on the chosen path.
 W.mode=W.mode||'pe'; W.s2start=14; W.s2dur=4; W.s2grid=null;
-const stepVisible=n=>n===6?W.mode==='s2p':(n===7?W.mode==='pe':true);
+const stepVisible=n=>n===6?false:(n===7?W.mode==='pe':true);   // v157: the event is set on the results page, not in the wizard
 function setMode(m){ W.mode=m; $('mode_pe').classList.toggle('sel',m==='pe'); $('mode_s2p').classList.toggle('sel',m==='s2p'); recap(); dots(); }
 $('mode_pe').addEventListener('click',()=>{setMode('pe'); goStep(1);});
 $('mode_s2p').addEventListener('click',()=>{setMode('s2p'); goStep(1);});
@@ -3443,7 +3443,7 @@ function recap(){
         ? 'Top to Bottom \u2014 the IT nameplate was derived from the grid connection'
         : 'Bottom to Top \u2014 the substation feed is derived from the IT nameplate'],
     ['Run mode',W.mode==='s2p'?'Speed to Power':'Power Envelope Optimization',
-      W.mode==='s2p'?`demand-response event ${String(W.s2start).padStart(2,'0')}:00 for ${W.s2dur} h \u00b7 ${S2P.GRIDS[W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'].name} coincident peaks \u00b7 store sized to the night before`
+      W.mode==='s2p'?`demand-response event ${String(W.s2start).padStart(2,'0')}:00 for ${W.s2dur} h \u00b7 ${S2P.GRIDS[W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'].name} coincident peaks \u00b7 store sized to the night before \u2014 window, grid and store are set on the results page`
                     :'IceBrick sized to the design week \u2014 IT capacity freed under the same connection'],
     ['Cooling cascade',c.name+(W.cascade===2?(W.wmode==='water'?' \u00b7 water-optimised':W.wmode==='night'?' \u00b7 night-fogging':' \u00b7 power-optimised'):''),c.short],
     ['Data hall',HALLS[W.hall].name,HALLS[W.hall].short],
@@ -3480,12 +3480,13 @@ function goStep(n){
   const dir=n>=STEP?1:-1; n=Math.max(0,Math.min(NSTEP-1,n));
   while(!stepVisible(n)&&n>0&&n<NSTEP-1)n+=dir;
   STEP=Math.max(0,Math.min(NSTEP-1,n));
-  if(STEP===6)syncS2W();
+  {const vis=[...Array(NSTEP).keys()].filter(stepVisible); vis.forEach((q,i)=>{const e=document.querySelector('.qstep[data-q="'+q+'"] .qnum'); if(e)e.textContent='Question '+(i+1)+' of '+vis.length;});}
   document.querySelectorAll('.qstep').forEach(q=>q.classList.toggle('on',+q.dataset.q===STEP));
   const wi=$('wizintro'); if(wi)wi.style.display=(STEP===0?'':'none');
   dots();
   if(STEP===2&&typeof pePaint==='function')setTimeout(pePaint,30);
   $('w_prev').disabled=(STEP===0);
+  $('w_recap').style.visibility=(STEP===0?'hidden':'visible');   // nothing has been answered yet on the use-case question
   $('w_next').style.visibility=((STEP===NSTEP-1||STEP===2||STEP===0)?'hidden':'visible');
   $('w_next').textContent=(STEP===NSTEP-2?'Review my answers →':'Next →');
   window.scrollTo({top:0,behavior:'smooth'});
