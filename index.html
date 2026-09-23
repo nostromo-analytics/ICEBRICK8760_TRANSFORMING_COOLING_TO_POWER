@@ -1598,7 +1598,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='161';
+const VER='163';
 // v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
 // stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
 // water over total annual IT kWh - set by the operator. Default cap below.
@@ -3476,7 +3476,17 @@ document.addEventListener('DOMContentLoaded',()=>{const el=$('i_mult'); if(!el)r
 });
 bind('i_oh','v_oh',v=>W.oh=v/100);
 
+// THE IT FOLLOWS THE ENVELOPE (v163). On the connection road the IT is not an input: it is whatever the
+// envelope carries at the design day, and that depends on questions answered AFTER the envelope - CDU
+// approach, supply temperature, recirculation, N. So it is re-derived from the current settings every
+// time the recap paints and once more at the run, and the run-ID always carries the number the results show.
+function sizeITToEnvelope(){
+  if(!(W.peMode==='grid'&&W.gc>0))return false;
+  const it=Math.max(1,Math.min(1000,Math.round(W.gc*(W.pePct/100)/peK()*10)/10));
+  if(Math.abs(it-W.IT)<0.05)return false; W.IT=it; return true;
+}
 function recap(){
+  try{ if(sizeITToEnvelope())syncWizLabels(); }catch(e){}
   const h=HUBS[W.hub], c=CASCADES[W.cascade];
   $('w_recap').innerHTML=`<span><b>${h.name}</b></span><span><b>${W.IT} MW</b> IT</span>`+
     `<span><b>${c.name}</b></span><span>${W.hall==='air'?'hall':'racks'} <b>${tA1(W.RS)}</b>`+
@@ -3570,6 +3580,7 @@ let progRAF=null;
 let SIZED=null;
 function runAnalysis(){
   STAGE='run';
+  try{ if(sizeITToEnvelope()){syncWizLabels(); recap();} }catch(e){}
   SIZED={RS:W.RS,RSmax:W.RSmax,FWS:W.FWS,N:W.N,IT:W.IT};
   hideEl('v_wiz'); hideEl('v_res'); showEl('v_run'); hideEl('restart');
   $('boom').classList.remove('in');
@@ -5092,6 +5103,14 @@ async function buildPDF(){
     chl:pTxt('v_chl'),
     eyebrow:pTxt('res_eyebrow'), intro:pTxt('res_intro'),
     yTag:pTxt('y_tag'), yTot:pTxt('y_tot'),
+    npl:(function(){ if(!R.dd)return null; const pe=peCalc(), IT=R.p.IT_kW/1000, ddPue=R.dd.pkMW/IT, dn=designN(W.hub,W.N);
+      const when=(dn&&dn.date?dn.date:'the N'+W.N+' design day');
+      return [['IT nameplate capacity \u00b7 design day', (pe.grid?pe.itB:IT).toFixed(1)+' MW IT',
+        pe.grid
+          ? W.gc.toFixed(1)+' MW connection \u00d7 '+Math.round(W.pePct)+'% ceiling = '+pe.E.toFixed(1)+' MW usable \u00f7 design-day PUE '+ddPue.toFixed(3)+' (N'+W.N+') \u2014 the IT this envelope carries before IceBrick'
+          : 'as entered \u00b7 at the N'+W.N+' design day it draws '+R.dd.pkMW.toFixed(2)+' MW, PUE '+ddPue.toFixed(3)+' \u2014 a '+pe.feed.toFixed(1)+' MW connection at '+Math.round(W.pePct)+'% ceiling',
+        'server'],
+        ['Design-day peak demand',R.dd.pkMW.toFixed(2)+' MW','N'+W.N+' \u00b7 what the connection, switchgear and chillers are sized to reach \u00b7 the year\u2019s measured peak is '+R.base.pkFac.toFixed(2)+' MW'+(typeof envelopeNote==='function'&&envelopeNote()?' \u00b7 '+envelopeNote().trim():''),'zap']]; })(),
     kpi:[['Annual average PUE',pTxt('k_pue'),pTxt('k_pue_s'),'activity'],
          ['Annual PEAK PUE · worst hour',pTxt('k_ppue'),pTxt('k_ppue_s'),'trend'],
          ['Peak facility demand',pTxt('k_mw'),pTxt('k_mw_s'),'zap'],
@@ -5404,6 +5423,7 @@ async function buildPDF(){
   // ---- baseline KPIs (design day is a footnote here) ---------------------
   newPage();
   h1('Baseline KPIs');
+  if(D.npl)kpis(D.npl);
   kpis(D.kpi);
   para(D.pueExplain);
   if(D.ddFoot){ rule(); setF(8.2,'bold',MUT); need(14); T('Design day',M,y+8); y+=12;
