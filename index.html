@@ -562,7 +562,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         </div>
         <div class="slrow" id="hf_sl_liq" style="margin-top:14px;display:none">
           <div class="sl">
-            <label>Supply temperature to the racks <span class="val" id="v_rs_l">30.0 &deg;C</span></label>
+            <label>Supply temperature to the racks <span class="hint" style="font-weight:400">(ASHRAE S-class)</span> <span class="val" id="v_rs_l">30.0 &deg;C</span></label>
             <input type="range" id="i_rs_l" min="18" max="45" step="0.5" value="30">
             <div class="hint">What the CDU delivers to the cold plates. The same slider as in the next question.</div>
           </div>
@@ -579,7 +579,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     <!-- Q5 — temperatures -->
     <div class="qstep" data-q="5">
       <div class="qnum">Question 6 of 8</div>
-      <div class="qtitle" id="q5title">What water do your racks actually get?</div>
+      <div class="qtitle" id="q5title">How you run now (what is your S-class?)</div>
       <p class="qhelp" id="q5help">Your IT does not see facility water &mdash; it sees whatever comes out of the CDU, one heat
         exchanger later. So we ask for the number your racks are promised and the step the CDU adds — the SLA ceiling
         comes on the next page, where IceBrick makes it usable. Facility water is then whatever the plant has to make to deliver it, and that is the loop the entire
@@ -684,7 +684,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
       <div class="slrow">
         <div class="sl">
-          <label><span id="lb_rs">Supply temperature to the racks</span> <span class="val" id="v_rs">30.0 &#176;C</span></label>
+          <label><span id="lb_rs">Supply temperature to the racks <span class="hint" style="font-weight:400">(ASHRAE S-class)</span></span> <span class="val" id="v_rs">30.0 &#176;C</span></label>
           <input type="range" id="i_rs" min="18" max="45" step="0.5" value="30">
           <div class="hint" id="rshint"></div>
         </div>
@@ -925,7 +925,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     </div>
     <div class="slrow" style="margin-top:14px">
       <div class="sl">
-        <label><span id="lb_rs2">Supply temperature to the racks</span> <span class="val" id="v_rs2">35.0 &#176;C</span></label>
+        <label><span id="lb_rs2">Supply temperature to the racks <span class="hint" style="font-weight:400">(ASHRAE S-class)</span></span> <span class="val" id="v_rs2">35.0 &#176;C</span></label>
         <input type="range" id="i_rs2" min="18" max="45" step="0.5" value="35">
       </div>
       <div class="sl">
@@ -1711,7 +1711,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='187';
+const VER='189';
 // v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
 // stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
 // water over total annual IT kWh - set by the operator. Default cap below.
@@ -3473,14 +3473,14 @@ function applyHall(){
   const air=W.hall==='air';
   const g=$('cdurow'); if(g)g.style.display=air?'none':'';
   if(air)W.cduap=0;
-  const lb=$('lb_rs');  if(lb)lb.textContent = air?'Chilled water supply to the hall':'Supply temperature to the racks';
-  const l2=$('lb_rs2'); if(l2)l2.textContent = air?'Chilled water supply to the hall':'Supply temperature to the racks';
+  const lb=$('lb_rs');  if(lb)lb.innerHTML = air?'Chilled water supply to the hall':'Supply temperature to the racks <span class="hint" style="font-weight:400">(ASHRAE S-class)</span>';
+  const l2=$('lb_rs2'); if(l2)l2.innerHTML = air?'Chilled water supply to the hall':'Supply temperature to the racks <span class="hint" style="font-weight:400">(ASHRAE S-class)</span>';
   const wA=$('animA_w'); if(wA)wA.style.display=air?'none':'';
   const scap=$('schemecap'); if(scap)scap.style.display=air?'':'none';
   const wB=$('animB_w'); if(wB)wB.style.display=air?'none':'';
   // v159: the SLA sliders (wizard and results) only exist for a liquid hall
   ['i_rsmax','i_rsmax2'].forEach(id=>{const e=$(id); if(e){const w=e.closest('.sl'); if(w)w.style.display=air?'none':'';}});
-  const t=$('q5title'); if(t)t.textContent = air ? 'How you run now' : 'How you run now';
+  const t=$('q5title'); if(t)t.textContent = air ? 'How you run now' : 'How you run now (what is your S-class?)';
   const q=$('q5help');  if(q)q.innerHTML = air
     ? `With no CDU in the loop there is no step to lose: the water your plant makes is the water your coils get. So we `+
       `ask for that number, and the entire study runs on it — there is no CDU to tie IceBrick into, so no Spike Shield and no warmer loop.`
@@ -3743,7 +3743,7 @@ function recapRows(){
            :'charging fills the valleys under the same ceiling the store protects'],
     ['Cooling cascade',c.name+(W.cascade===2?(W.wmode==='night'?' \u00b7 night-fogging':' \u00b7 power first, water second'):''),c.short+(W.cascade===2&&W.wmodeLegacy?` \u00b7 the run-ID asked for ${W.wmodeLegacy==='water'?'water optimisation':'power optimisation'}, a mode that no longer exists; it re-runs under power first, water second`:'')],
     ['Data hall',HALLS[W.hall].name,HALLS[W.hall].short],
-    [W.hall==='air'?'Chilled water to the hall':'Supply to the racks',tA1(W.RS),
+    [W.hall==='air'?'Chilled water to the hall':'Supply to the racks (ASHRAE S-class)',tA1(W.RS),
       W.hall==='air'
         ? `no CDU in the loop, so this is the facility water itself \u2014 and that loop is what the before analysis runs on`
         : `what the CDU delivers to the cold plates today \u2014 across a ${tD1(W.cduap)} `+
