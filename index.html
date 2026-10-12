@@ -1711,7 +1711,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='184';
+const VER='187';
 // v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
 // stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
 // water over total annual IT kWh - set by the operator. Default cap below.
@@ -1982,12 +1982,16 @@ function dayOps(dayH,FWS,p){
   // supply), the pads may fog the CONDENSERS of the chillers still running in a charging hour - and the ice
   // plant's own condensers - so the compressors that stay on run at the wet-bulb lift. The trench is tried
   // first; the condensers take whatever it cannot. Billed at settlement under the night-fogging WUE cap.
-  const nfW=(p.cascade===2&&p.nf===true&&wfcOn);
+  // v185: with the pads on the condensers only (no dry-cooler trench) the night-fogging rule still applies -
+  // in a charging hour the condensers of the chillers still running, and the ice plant's own, run wet.
+  const condOn=(p.cascade===2&&(p.pads==null||p.pads==='cond'||p.pads==='both'));
+  const nfW=(p.cascade===2&&p.nf===true&&(wfcOn||condOn));
   const facD=wfcOn
     ? dayH.map((o,i)=>fixB[i]+mechEl(o,FWS,p,thB[i]*(1-fcar[i]),undefined,(nfW&&fcar[i]<0.999)?true:false)/1000)
+    : (nfW ? dayH.map((o,i)=>fixB[i]+mechEl(o,FWS,p,thB[i],undefined,true)/1000)
     : ((sprayP===true)
       ? dayH.map((o,i)=>o.T>FOG_C ? facB[i] : fixB[i]+mechEl(o,FWS,p,thB[i],undefined,false)/1000)
-      : facB);
+      : facB));
   const facChgB=(i,c,useTrench)=>
     ((useTrench?facD:facB)[i])+((c>1e-9&&!p.nfc)?c/copAt(dayH[i],FWS-CHG_DT,p,xIce(i,c),undefined,(p.cascade===2?((nfW&&fcar[i]<0.999)?true:false):undefined)):0)/1000;   // v160: on a non-firm feed the charge never touches the ceiling
   const facChg=(i,c)=>facChgB(i,c,true);
@@ -2006,6 +2010,7 @@ function dayOps(dayH,FWS,p){
     // line otherwise - gating on a different line than the fit makes chargedAt a cliff and the
     // charge bisection lands on the cliff instead of the need
     const cap=capTh[i]; if(cap<=1e-9||((useTrench?facD:facB)[i])>=F)return 0;
+    if(nfW&&!wfcOn&&facB[i]>=F)return 0;   // v185: condenser night fogging never shares an hour with a discharge - an hour the dry line breaches is the ice's, not the pads'
     if(facChgB(i,cap,useTrench)<=F)return cap;
     let lo=0,hi=cap;
     for(let k=0;k<40;k++){const mid=(lo+hi)/2; if(facChgB(i,mid,useTrench)<F)lo=mid; else hi=mid;}
@@ -2016,7 +2021,7 @@ function dayOps(dayH,FWS,p){
   const chargedAtL=F=>dayH.reduce((s,o,i)=>s+solveCB(F,i,false),0);      // legacy-fundable tier only
   const shavedAtC=F=>dayH.reduce((s,o,i)=>s+solveUC(F,i),0);              // ceiling economics only — the water mandate is NOT allowed to move the ceiling
   const shavedAt =F=>dayH.reduce((s,o,i)=>s+solveU(F,i),0);              // kWth drawn
-  return {Q,g,bl,facB,mechB,thB,fixB,e0,isC,capTh,xIce,facDis,facChg,facChgB,solveU,solveC,solveCB,solveUC,mand,mandTot,chargedAt,chargedAtL,shavedAt,shavedAtC,sprayP,facD,fcar,wfcOn};
+  return {Q,g,bl,facB,mechB,thB,fixB,e0,isC,capTh,xIce,facDis,facChg,facChgB,solveU,solveC,solveCB,solveUC,mand,mandTot,chargedAt,chargedAtL,shavedAt,shavedAtC,sprayP,facD,fcar,wfcOn,nfW};
 }
 function levelDay(dayH,FWS,p,target,chgNeed,stockIn,smaxIn){
   const O=dayOps(dayH,FWS,p);
@@ -2151,7 +2156,7 @@ function levelDay(dayH,FWS,p,target,chgNeed,stockIn,smaxIn){
     if(chgTh[i]>1e-9){
       const c=chgTh[i];
       if(t<=1e-9&&c<=1e-9){raw.push(0);wp.push(0);lf.push(0);el.push(0);return;}
-      const eC=c>1e-9?c/copAt(o,FWS-CHG_DT,p,xIce(i,c),undefined,(p.cascade===2?((p.nf===true&&O.wfcOn&&O.fcar[i]<0.999)?true:false):undefined)):0;
+      const eC=c>1e-9?c/copAt(o,FWS-CHG_DT,p,xIce(i,c),undefined,(p.cascade===2?((O.nfW&&O.fcar[i]<0.999)?true:false):undefined)):0;
       raw.push(-eC); wp.push(0); lf.push(0); el.push(-eC);
     }else{
       const u=disTh[i];
@@ -2448,7 +2453,7 @@ function runStorage(p,base,N,targetOverride,pre){
       const elMW=lc.el[i]/1000, effMW=(lc.wp[i]+lc.lf[i])/1000;
       // a charging hour under the night-spray doctrine runs on the wet free-cooling stage: the
       // realised facility is the trench floor plus the ice circuit, not the legacy-priced draw
-      const wfcH2=(O.wfcOn&&lc.chgTh[i]>1e-9);
+      const wfcH2=((O.wfcOn||O.nfW)&&lc.chgTh[i]>1e-9);   // v185: a condenser-fogged charging hour runs on the fogged line too
       const bF2=wfcH2?O.facD[i]:bFac, bM2=wfcH2?Math.max(0,O.facD[i]-O.fixB[i]):bMech;
       // v160: charging on the non-firm feed is not on this meter; the feed's own peak is tracked instead
       const onNf=(p.nfc&&lc.chgTh[i]>1e-9), elX=onNf?0:elMW; if(onNf&&-elMW>nfPk)nfPk=-elMW;
@@ -2492,6 +2497,7 @@ function runStorage(p,base,N,targetOverride,pre){
   if(dyn){
     const wetMode=!waterMode, pwMode=(pH2.wmode==='pw');
     const wfcOn=(!waterMode&&!pwMode&&(pH2.pads==null||pH2.pads==='dry'||pH2.pads==='both'));
+    const condOnS=(!waterMode&&!pwMode&&(pH2.pads==null||pH2.pads==='cond'||pH2.pads==='both'));   // v185
     const fCarG=o=>Math.max(0,Math.min(1,1-((o.WB+FIX.appr)-FWS)/3));
     const gal=r=>FOG_RATE*(r/TON_KW)*GAL_L;
     const rows=[], rowsC=[]; let waterTot=0;
@@ -2503,7 +2509,7 @@ function runStorage(p,base,N,targetOverride,pre){
       // under the DRY facility line spends nothing; a hot night wets exactly the carry that lets
       // the compressors duck under the day's charge level, and the realised top rides that level.
       const fcM=(wfcOn&&c>1e-9&&thF>1e-9)?fCarG(o):0;
-      const nfW=(wfcOn&&pH2.nf===true), nfH=(nfW&&c>1e-9&&thF>1e-9), wetR=(nfH&&fcM<0.999);   // v167: condensers fogged where the trench cannot carry
+      const nfW=((wfcOn||condOnS)&&pH2.nf===true), nfH=(nfW&&c>1e-9&&thF>1e-9); let wetR=(nfH&&fcM<0.999);   // v167: condensers fogged where the trench cannot carry
       let carry=0;
       watI[i]=0;
       if(fcM>0||nfH){
@@ -2512,6 +2518,15 @@ function runStorage(p,base,N,targetOverride,pre){
         // acres of dry room below the target and spend nothing
         const chgEl=chgElA[i]||0;
         const bl0=facBaseline(o,pH2,false);
+        // v187 FRUGAL CONDENSER FOGGING. The plan priced every charging hour wet; operations only fog the
+        // condensers when the hour cannot hold its charge DRY under the year's ceiling. A valley night with
+        // room to spare charges dry and spends no water; the realised line rises to the dry level, never above the target.
+        if(wetR&&!wfcOn){
+          const x=(ICE_CAP>1e-9&&isFinite(ICE_CAP))?Math.max(0,Math.min(1,c/ICE_CAP)):1;
+          const eCd=c/copAt(o,FWS-CHG_DT,pH2,x,undefined,false)/1000, eCw=c/copAt(o,FWS-CHG_DT,pH2,x,undefined,true)/1000;
+          const mD=mechEl(o,FWS,pH2,thF,undefined,false)/1000, mW=mechEl(o,FWS,pH2,thF,undefined,true)/1000;
+          if(bl0.fix+mD+eCd<=target+1e-9){ wetR=false; const dd=(mD-mW)+(eCd-eCw); if(dd>1e-9){ iceFac[i]+=dd; mechI[i]+=dd; midArr[i]+=dd; chgArr[i]=(chgArr[i]||0)+(eCd-eCw); } }
+        }
         const allow=target-bl0.fix-chgEl;
         const mDry=mechEl(o,FWS,pH2,thF,undefined,wetR)/1000;
         const planEff=mechEl(o,FWS,pH2,thF*(1-fcM),undefined,wetR)/1000;
@@ -2722,7 +2737,7 @@ function computeIce(){
   //  the CNDCP water-stressed commitment of 0.4 L/kWh. If the natural (deepest) ceiling spends
   //  past that allowance, the ceiling retreats until the trade passes - ambition is bounded by
   //  the freed capacity's own WUE, never by the incumbent's habits.
-  if(R.p.cascade===2&&R.p.wmode!=='water'&&R.p.pads!=='cond'&&!(R.p.pkw>0)){
+  if(R.p.cascade===2&&R.p.wmode!=='water'&&(R.p.pads!=='cond'||R.p.nf)&&!(R.p.pkw>0)){
     const WUE_REF=0.4, NF=!!R.p.nf, NFC=(R.p.nfCap!=null?R.p.nfCap:NF_CAP_DEFAULT);
     const gov=x=>{const un=Math.max(0,R.base.pkFac-Math.max(...x.iceFac));
       // power mode: the unlocked MW pay for the water at the CNDCP intensity.
@@ -2753,7 +2768,7 @@ function computeIce(){
       // it dwarfs the allowance, and the retreat gives back nearly everything. So run the no-trench
       // plan and keep whichever ceiling is lower; the trench is a tool, not an obligation.
       try{
-        const pC=Object.assign({},R.p,{pads:'cond'});
+        const pC=Object.assign({},R.p,{pads:'cond',nf:false});   // v185: the fallback is dry nights, not fogged condensers
         const stC=runStorage(pC,R.base,W.N);
         if(stC&&isFinite(stC.pkMW)&&stC.pkMW<R.st.pkMW-1e-6){
           const gC=gov(stC); R.st=stC; g=gC; R.st.wueRelaxed=1; R.st.wueFallback='no-trench';
@@ -5154,6 +5169,12 @@ function drawB2(){
       borderWidth:1.3,pointRadius:0,fill:false,tension:0,order:5,yAxisID:'yw'}]:[])
    .concat([{label:'Ambient dry-bulb',data:b.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,fill:false,tension:0,order:4,yAxisID:'y3',hidden:true},
             {label:'Wet-bulb',data:b.wb.map(cvT),borderColor:c.wb,backgroundColor:'transparent',borderWidth:1.1,pointRadius:0,fill:false,tension:0,order:4,yAxisID:'y3',hidden:true,borderDash:[4,3]}])
+   // v186 THE SIZING DAY. The day whose night set the ceiling - and with it the store - is banded, with a marker on the ceiling at its hottest hour.
+   .concat((function(){ const d=st.targetDay, hH=(st.floorH!=null?st.floorH:d*24+15); if(d==null)return [];
+      const band=new Array(8760).fill(null), dot=new Array(8760).fill(null);
+      for(let i=d*24;i<d*24+24;i++)band[i]=st.pkMW; dot[hH]=st.pkMW;
+      return [{label:'Sizing day',data:band,borderColor:'transparent',backgroundColor:(S.theme==='light'?'rgba(230,152,43,.22)':'rgba(245,166,35,.22)'),borderWidth:0,pointRadius:0,fill:'origin',tension:0,order:9},
+              {label:'Sizing day marker',data:dot,showLine:false,pointRadius:7,pointHoverRadius:8,pointStyle:'rectRot',pointBackgroundColor:'#e6982b',pointBorderColor:'#ffffff',pointBorderWidth:1.5,fill:false,order:0}]; })())
   },options:(function(){
     // THE TOOLTIP READS AGAINST THE NEW CEILING. Every hour is told as a waterfall from the old
     // operational limit down to the with-IceBrick line: the ghost's avoided mechanical cooling
@@ -5200,6 +5221,8 @@ function drawB2(){
               return two('Efficiency gained \u2014 lift + work point', m, a, m-a);
             case 'Water use':
               return ` Water use: ${fmtInt(x.raw)} ${wUnit()}/h`;
+            case 'Sizing day marker': return ' Sizing day \u2014 the night here set the ceiling and the store';
+            case 'Sizing day': return '';
             case 'Ambient dry-bulb': return ` Dry-bulb ${x.raw.toFixed(1)} ${tUnit()}`;
             case 'Wet-bulb': return ` Wet-bulb ${x.raw.toFixed(1)} ${tUnit()}`;
             case 'IceBrick charging':{
@@ -5224,7 +5247,7 @@ function drawB2(){
         }}};
     o2.plugins.tooltip.footerColor=C().text;
     return o2;
-  })(),plugins:[{id:'b2Y3vis',beforeLayout:ch=>{const n=ch.data.datasets.length; ch.options.scales.y3.display=ch.isDatasetVisible(n-2)||ch.isDatasetVisible(n-1);}}]});
+  })(),plugins:[{id:'b2Y3vis',beforeLayout:ch=>{const n=ch.data.datasets.length-2; ch.options.scales.y3.display=ch.isDatasetVisible(n-2)||ch.isDatasetVisible(n-1);}}]});
   $('cB2').ondblclick=resetBoth;
   buildLegend($('b2_legend'),chB2,[{lb:'Operational power limit today \u2014 '+b.pkFac.toFixed(2)+' MW',col:c.mech,i:0,dash:true},
     {lb:'Peak with IceBrick \u2014 '+st.pkMW.toFixed(2)+' MW  ('+(b.pkFac>=st.pkMW?'\u2212':'+')+Math.abs(b.pkFac-st.pkMW).toFixed(2)+' MW)',col:c.chiller,i:8,dash:true},
@@ -5234,8 +5257,10 @@ function drawB2(){
     {lb:'Chiller efficiency \u2014 post-cooling lift + work point',col:c.wpB,i:[6,7]}]
     .concat(up?[{lb:'Warmer guaranteed loop \u2014 Spike Shield, not the battery',col:c.ghost,i:3,dash:true}]:[])
     .concat(R.p.cascade!==1?[{lb:'Water use (right axis)',col:c.water,i:9}]:[])
-    .concat((function(){const n=chB2.data.datasets.length; return [{lb:'Ambient dry-bulb (right axis)',col:c.amb,i:n-2},{lb:'Wet-bulb (right axis)',col:c.wb,i:n-1,dash:true}];})())
-    .concat([{lb:'Facility demand before (ghost)',col:c.ghost,i:1}]));
+    .concat((function(){const n=chB2.data.datasets.length-2; return [{lb:'Ambient dry-bulb (right axis)',col:c.amb,i:n-2},{lb:'Wet-bulb (right axis)',col:c.wb,i:n-1,dash:true}];})())
+    .concat([{lb:'Facility demand before (ghost)',col:c.ghost,i:1}])
+    .concat((function(){const n=chB2.data.datasets.length, d=st.targetDay; if(d==null)return []; const dt=new Date(2025,0,1+d);
+      return [{lb:'Sizing day \u2014 '+MONTHS[dt.getMonth()]+' '+dt.getDate()+': the night here set the ceiling and the store',col:'#e6982b',i:[n-2,n-1]}];})()));
 }
 // ---------------------------------------------------------------- the sizing day
 // TWO DAYS AROUND THE HOUR THAT SET THE FLOOR. Everything the tool sizes traces to one hour -
