@@ -176,6 +176,12 @@ h2.sec{font-family:var(--disp);font-size:22px;font-weight:700;margin:0 0 4px;let
 .chiprow .opt .on1{font-size:12.5px;margin:0;font-family:var(--sans);font-weight:500}
 .chiprow .opt .on2{display:none}
 @media(max-width:600px){.mapwrap{display:none}}
+.mapfold{max-width:780px;margin:0 auto 14px}
+.mapfold summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:10px;padding:9px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);font-family:var(--disp);font-size:14px;font-weight:600;color:var(--text)}
+.mapfold summary::-webkit-details-marker{display:none}
+.mapfold summary::before{content:'▸';font-size:12px;color:var(--muted)}
+.mapfold[open] summary::before{content:'▾'}
+.mapfold summary .maphint{margin-left:auto}
 .opt.big{padding:20px 20px}
 .opt.big .on1{font-size:18px;font-weight:700;margin-bottom:6px}
 .opt.big .on2{font-size:12.5px}
@@ -490,8 +496,15 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       <div class="mapwrap">
         <svg class="usmap" id="usmap" viewBox="0 0 980 600" role="group" aria-label="US data center hubs"></svg>
         <div class="mapcap"><b id="map_name">—</b><span id="map_sub"></span>
-          <span class="maphint">20 US hubs + Shoham (IL)</span></div>
+          <span class="maphint">21 US hubs + Shoham (IL) · Australia below</span></div>
       </div>
+      <details class="mapfold" id="aufold">
+        <summary><span>Australia</span><span class="maphint">6 hubs · click to open</span></summary>
+        <div class="mapwrap" style="margin-top:8px">
+          <svg class="usmap" id="aumap" viewBox="0 0 980 620" role="group" aria-label="Australian data center hubs"></svg>
+          <div class="mapcap"><span class="maphint" style="margin-left:0">Sydney · Melbourne · Brisbane · Perth · Canberra · Adelaide — BOM climate normals, synthetic hourly year</span></div>
+        </div>
+      </details>
       <div class="chiprow" id="hubgrid"></div>
     </div>
 
@@ -576,8 +589,13 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         </div>
         <p class="qhelp" style="margin:14px 0 10px">Adiabatic systems can be dispatched for two different goals &mdash; choose
           what IceBrick should optimise on this site:</p>
-        <div class="optgrid g2" id="wmgrid">
-          <div class="opt sel" data-w="pw"><span class="on1">Power first, water second</span>
+        <div class="optgrid g3" id="wmgrid">
+          <div class="opt sel" data-w="water"><span class="on1">Replace the water with ice</span>
+            <span class="on2">Today&rsquo;s peak is held exactly where the pads hold it &mdash; and then the pads are shut. The store and
+              the ice plant are sized so that every hour the trigger would spray runs dry on ice instead: the same
+              envelope, zero water. The results open with the three mechanical-cooling envelopes side by side &mdash;
+              no means, water, ice &mdash; and the storage the last one takes.</span></div>
+          <div class="opt" data-w="pw"><span class="on1">Power first, water second</span>
             <span class="on2">The ceiling, the store and the charging plant are sized for power. Then every night the
               waterless charging circuit banks whatever else fits dry under the ceiling, and that ice is spent in the
               hours the pads would otherwise spray, hottest first. Water is bought only to defend the peak, never for
@@ -646,11 +664,12 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
       <div class="qnum">Question 6 of 8</div>
       <div class="qtitle" id="q5title">What water do your racks actually get?</div>
       <p class="qhelp" id="q5help">Your IT does not see facility water &mdash; it sees whatever comes out of the CDU, one heat
-        exchanger later. So we ask for the number your racks are promised and the step the CDU adds — the SLA ceiling
-        comes on the next page, where IceBrick makes it usable. Facility water is then whatever the plant has to make to deliver it, and that is the loop the entire
-        <i>before</i> analysis runs on.</p>
+        exchanger later. So we ask for the number your racks are promised and the step the CDU adds. Facility water is then whatever the plant has to make to deliver it, and that is the loop the whole analysis runs on.</p>
 
-      <div class="scheme">
+      <!-- v196: the two loop animations live here, collapsed - open them when you want to show the thermal spike -->
+      <details class="mapfold" id="animfold" style="max-width:none;margin:0 0 18px">
+        <summary><span>Loop animation &mdash; the thermal spike, how you run now and with IceBrick tied in at the CDU</span><span class="maphint">collapsed &middot; click to open</span></summary>
+      <div class="scheme" style="margin-top:8px">
         <div id="animA_w">
           <div id="animA" class="animwrap" role="img" aria-label="Animated cooling loop — how you run now"></div>
           <div class="hint" id="animA_st" style="margin-top:6px;font-family:var(--mono)"></div>
@@ -732,20 +751,16 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         </svg>
         <div class="schemecap" id="schemecap">&mdash;</div>
       </div>
-
-      <!-- INDUSTRY VOICE — the market is already converging on the warm loop this page prices -->
-      <a href="https://www.datacenterdynamics.com/en/analysis/hot-water-cold-water/" target="_blank" rel="noopener"
-         style="display:block;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px 20px 15px;margin:0 0 22px;text-decoration:none;color:inherit">
-        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-          <span style="flex:none;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.08em;border:2px solid var(--text);border-radius:4px;padding:3px 8px;color:var(--text)">DCD</span>
-          <div style="flex:1;min-width:240px">
-            <div style="font-family:var(--disp);font-weight:700;font-size:17.5px;line-height:1.45;color:var(--text)">&ldquo;We're seeing many of our largest customers are talking about water temperatures that are more in the
-              <mark style="background:rgba(214,69,69,.20);color:var(--chiller);padding:0 4px;border-radius:3px">80&ndash;86&nbsp;&deg;F (27&ndash;30&nbsp;&deg;C)</mark> range, not
-              <mark style="background:rgba(214,69,69,.20);color:var(--chiller);padding:0 4px;border-radius:3px">104&ndash;122&nbsp;&deg;F (40&ndash;50&nbsp;&deg;C)</mark>&rdquo;</div>
-            <div style="font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:10px">Andrew Bradner, Schneider Electric &middot; DatacenterDynamics &mdash; &ldquo;Hot water, cold water&rdquo; &nbsp;<span style="color:var(--water)">Read the full article on DCD website &rarr;</span></div>
-          </div>
+      <div class="scheme" id="schemeB">
+        <div class="hint" style="margin:0 0 8px;font-family:var(--mono)">Same loop, IceBrick tied in at the CDU: the DCIM sees the spike as it starts, the store is dispatched, and the cold wave reaches the CDU HX ahead of the heat.</div>
+        <div id="animB_w">
+          <div id="animB" class="animwrap" role="img" aria-label="Animated cooling loop — with IceBrick tied in"></div>
+          <div class="hint" id="animB_st" style="margin-top:6px;font-family:var(--mono)"></div>
         </div>
-      </a>
+      </div>
+      </details>
+
+      <!-- v195: industry-voice quote retired -->
 
       <div class="slrow">
         <div class="sl">
@@ -843,12 +858,6 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         the moment it starts, IceBrick is dispatched, and the cold wave reaches the CDU HX ahead of the heat — the hall
         never feels the hour. That interception, guaranteed under SLA, is what lets you commit to the warmest supply your
         rack architecture allows.</p>
-      <div class="scheme">
-        <div id="animB_w">
-          <div id="animB" class="animwrap" role="img" aria-label="Animated cooling loop — with IceBrick tied in"></div>
-          <div class="hint" id="animB_st" style="margin-top:6px;font-family:var(--mono)"></div>
-        </div>
-      </div>
       <div class="slrow">
         <div class="sl">
           <label>Maximum allowable supply &#183; SLA <span class="val" id="v_rsmax">35.0 &#176;C</span></label>
@@ -1137,8 +1146,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
     </div>
   </div>
 
-  <!-- ACT 4 — the ask -->
-  <div class="act" id="act4">
+  <!-- ACT 4 — the ask (v193: no gate, the run continues by itself) -->
+  <div class="act" id="act4" style="display:none">
     <div class="askbox">
       <h2>Ready for the next level?</h2>
       <p id="ask_p"></p>
@@ -1149,6 +1158,20 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
 
   <!-- ==================== ACT 5 — THE NEXT LEVEL ==================== -->
   <div id="nextlevel" style="display:none">
+    <!-- v193 — adiabatic cascade: no means → water → ice, mechanical cooling only -->
+    <div class="act" id="actW" style="display:none">
+      <div class="acthead"><span class="actnum">Results</span>
+        <h2 class="sec">Mechanical cooling, three ways: no means, water, ice</h2></div>
+      <p class="sub" style="margin-bottom:12px" id="w3_lead"></p>
+      <div class="hero h4" id="w3_tiles"></div>
+      <div class="panel" style="margin-top:16px">
+        <div class="ptitle" id="w3_tag"></div>
+        <div style="position:relative;height:330px"><canvas id="cW3"></canvas></div>
+        <div class="legend" id="w3_legend"></div>
+        <div class="cf-note" id="w3_note" style="margin-top:8px"></div>
+        <div class="cf-note" id="w3_reco" style="margin-top:8px;display:none"></div>
+      </div>
+    </div>
     <div class="act" id="act5">
       <div class="acthead"><span class="actnum">Results</span>
         <h2 class="sec">Recommended design changes</h2></div>
@@ -1177,9 +1200,9 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         <div class="d" id="d_nf_w" style="display:none"><div class="dl">Non-firm charging feed</div><div class="dv" id="d_nf">—</div><div class="ds" id="d_nf_s"></div></div>
         <div class="d" id="d_h2o_w" style="display:none"><div class="dl">Water use effectiveness · WUE</div><div class="dv" id="d_h2o">—</div><div class="ds" id="d_h2o_s"></div></div>
       </div>
-      <div class="explain" id="fin_other" style="margin-top:12px"></div>
-      <!-- v139: "Why this works" moves up to sit directly under the results, per review -->
-      <div id="why_wrap" style="margin-top:18px">
+      <div class="explain" id="fin_other" style="margin-top:12px;display:none"></div>
+      <!-- v139: "Why this works" · v197: fine print retired from the page and the PDF -->
+      <div id="why_wrap" style="margin-top:18px;display:none">
         <div class="explain" id="nl_explain"></div>
         <div class="explain" id="nl_bullets" style="margin-top:14px"></div>
       </div>
@@ -1197,6 +1220,23 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
         holding the facility never carry the charging duty and never feel it on their part-load curve. The night band is
         pure blue — the ice circuit's own electric, and nothing else.
         Drag to zoom either chart — the other follows, so you are always comparing the same hours.</p>
+      <!-- v198: the adiabatic trigger, and the plant with no means at all -->
+      <div class="panel" id="trig_wrap" style="margin-bottom:16px;display:none">
+        <div class="slrow"><div class="sl">
+          <label>Adiabatic trigger &mdash; pads on above <span class="val" id="v_trig">32.2 &deg;C</span></label>
+          <input type="range" id="i_trig" min="20" max="40" step="0.5" value="32.2">
+          <div class="hint" id="trig_hint">Today's practice sprays the pads whenever the dry-bulb is above this. Move it and the whole study re-runs: the water bill, the peaks, the ice. Default 90 &deg;F.</div>
+        </div></div>
+      </div>
+      <div class="panel" id="b0_wrap" style="margin-bottom:16px;display:none">
+        <div class="chead">
+          <div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">No means &mdash; pads never wetted, no IceBrick</h3>
+            <div class="ctag" id="b0_tag"></div></div>
+          <button class="btn" id="b0_reset" style="padding:6px 12px;font-size:12px">Reset zoom</button>
+        </div>
+        <div class="chartbox"><canvas id="cB0"></canvas></div>
+        <div class="legend" id="b0_legend"></div>
+      </div>
       <div class="panel" style="margin-bottom:16px">
         <div class="chead">
           <div><h3 class="ctitle" style="border:none;padding:0;margin:0;text-transform:none;color:var(--text);font-size:15px">Without IceBrick</h3>
@@ -1556,8 +1596,23 @@ const HUBS = {
    T:[5,8,12,17,21,26,28,28,24,17,11,6],R:[11,11,12,12,11,11,11,11,11,12,11,10],Td:[-2,0,4,10,15,20,21,21,17,10,4,-1]},
  apx:{name:"Appomattox",sub:"Virginia",seed:19,clim:"Humid subtropical · inland Piedmont",
    T:[3,4,9,14,19,23,25,24,21,14,9,4],R:[11,12,13,13,12,12,11,11,12,12,11,11],Td:[-4,-4,0,5,11,17,19,19,15,8,2,-3]},
+ bfl:{name:"Bakersfield",sub:"California · San Joaquin Valley",seed:42,clim:"Hot semi-arid · very hot dry summers, low wet-bulb, wide daily range",
+   T:[9.5,12,15,18.5,23.5,28,31,30.5,27,21,13.5,9],R:[12,13,14,15,16,17,17,17,17,16,13,11],Td:[4,5,5,5,6,7,9,9,8,6,4,3]},
  shm:{name:"Shoham",sub:"Israel · Ben Gurion Airport",seed:41,clim:"Eastern Mediterranean · hot dry summers, mild wet winters",
-   T:[13,13,15,18,21,24,26,27,25,22,18,14],R:[10,10,11,12,13,12,11,11,11,11,10,10],Td:[7,8,9,11,14,18,20,21,19,16,12,9]}
+   T:[13,13,15,18,21,24,26,27,25,22,18,14],R:[10,10,11,12,13,12,11,11,11,11,10,10],Td:[7,8,9,11,14,18,20,21,19,16,12,9]},
+ // v191 Australia - BOM climate normals (monthly mean, daily range, dew point); southern-hemisphere seasons fall out of the months themselves
+ syd:{name:"Sydney",sub:"NSW · Kingsford Smith",seed:51,au:true,clim:"Humid subtropical coast · warm humid summers, mild winters",
+   T:[23,23,21.5,18.5,15.5,13,12,13,15.5,18,20,22],R:[8,8,8,9,9,9,10,10,10,9,9,8],Td:[17,18,16,13,10,8,6,6,8,11,13,15]},
+ mel:{name:"Melbourne",sub:"Victoria · Tullamarine",seed:52,au:true,clim:"Temperate oceanic · dry hot spells, cool winters, low wet-bulb",
+   T:[20.5,20.5,18.5,15.5,12.5,10,9.5,10.5,12,14.5,16.5,18.5],R:[12,12,11,10,8,7,7,8,9,10,11,11],Td:[11,12,11,10,8,7,6,6,7,8,9,10]},
+ bne:{name:"Brisbane",sub:"Queensland",seed:53,au:true,clim:"Humid subtropical · hot humid summers, very high wet-bulb",
+   T:[25.5,25,24,21.5,18.5,16,15,16,18.5,21,23,24.5],R:[9,9,9,10,11,11,11,12,11,10,10,9],Td:[20,20,19,16,13,10,9,9,12,15,17,18]},
+ per:{name:"Perth",sub:"Western Australia",seed:54,au:true,clim:"Mediterranean · hot dry summers, low wet-bulb",
+   T:[24.5,25,23,19.5,16,13.5,12.5,13,14.5,17,20,22.5],R:[14,14,13,12,11,10,10,10,11,12,13,14],Td:[12,13,12,11,10,9,8,8,9,10,11,11]},
+ cbr:{name:"Canberra",sub:"ACT · 580 m",seed:55,au:true,clim:"Cool temperate inland · dry summers, wide daily range, cold nights",
+   T:[21,20.5,18,13.5,9.5,7,6,7,10,13,16.5,19.5],R:[15,15,15,15,13,11,11,12,13,14,15,15],Td:[9,10,9,7,5,4,3,3,4,5,7,8]},
+ adl:{name:"Adelaide",sub:"South Australia",seed:56,au:true,clim:"Mediterranean · hot dry summers, low wet-bulb",
+   T:[23,23,21,17.5,14.5,12,11,12,14,16.5,19,21.5],R:[13,13,12,11,9,8,8,8,10,11,12,12],Td:[11,12,11,10,9,8,7,7,7,8,9,10]}
 };
 const CASCADES={
  1:{name:"True waterless",short:"Dry coolers + air-cooled chillers",
@@ -1699,7 +1754,7 @@ function designN(key,N){         // hottest day in the most recent N years of re
 
 // ---------- plant constants ----------
 const HFG=2257, TON_KW=3.51685, GAL_L=3.785411784;
-const FOG_C=32.222, FOG_RATE=2.5, TWR_RATE=2.9;   // adiabatic spray trigger = 90 °F; gal per ton-hour rejected
+let FOG_C=32.222; const FOG_C0=32.222, FOG_RATE=2.5, TWR_RATE=2.9;   // adiabatic spray trigger = 90 °F (v198: a slider on the results page moves it); gal per ton-hour rejected
 // Dry-cooler fan power is NOT carried as a separate ancillary: the YVFA0309's datasheet kW
 // already includes its own condenser fans, so a flat per-hour fan adder double-counted air movement.
 const PUMP_PRI=0.010;     // primary FWS-loop circulation pumps, fraction of Q
@@ -1817,7 +1872,7 @@ function copAt(o,FWS,p,x,hd,spray){
   // undefined falls back to the legacy fixed trigger (o.T > 90 F): how the customer's plant runs
   // today, and the reference every saving is measured against.
   const wet=(spray!=null)?spray:(o.T>FOG_C);
-  if(p.cascade===2 && wet && condAir>o.WB) condAir=condAir-FIX.eps*(condAir-o.WB);
+  if(p.cascade===2 && wet && padsOnCond(p) && condAir>o.WB) condAir=condAir-FIX.eps*(condAir-o.WB);   // v199: only where the condensers have pads
   const lift=Math.max(4,(condAir+COND_APPR)-(FWS-EVAP_APPR));
   // EVAPORATOR-TEMPERATURE CORRECTION. K = COP x lift is, to first order, (fraction of Carnot)
   // x the ABSOLUTE evaporator temperature. The sheet's K was measured at 62.00 F leaving water;
@@ -1842,7 +1897,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='190';
+const VER='202'; const VER_LABEL='2.02';   // v2.01: the run code keeps the integer build (201); the page shows 2.01
 // v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
 // stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
 // water over total annual IT kWh - set by the operator. Default cap below.
@@ -1862,8 +1917,20 @@ const plr=th=>PLANT_TH>0?Math.max(0,Math.min(1,th/PLANT_TH)):1;
 function mechEl(o,FWS,p,th,hd,spray){ return th<=1e-9?0:th/copAt(o,FWS,p,plr(th),hd,spray); }
 // Each stage sheds a BAND of the loop ΔT: dry cooler down to (dry-bulb + approach), the evaporative
 // stage on down toward (wet-bulb + approach), the compressor trims whatever is still above FWS.
-function split(o,FWS,p){
+const padsOnDry=p=>(p.cascade===2&&(p.pads==null||p.pads==='dry'||p.pads==='both'));
+const padsOnCond=p=>(p.cascade===2&&(p.pads==null||p.pads==='cond'||p.pads==='both'));
+const wetAt=(o,spray)=>(spray!=null)?!!spray:(o.T>FOG_C);
+function split(o,FWS,p,spray){
   const casc=p.cascade, dt=FIX.loopdt, top=FWS+dt;
+  // v199 DRY-COOLER PADS, BY DAY. When the pads sit on the dry coolers and are on this hour, the coolers breathe air
+  // pre-cooled toward the wet-bulb (FIX.eps of the depression) and leave water that much colder - on warm facility
+  // water that alone can carry the loop and the compressors stop. Until v198 only the condensers felt the pads.
+  if(casc===2&&padsOnDry(p)&&wetAt(o,spray)){
+    const air=o.T-FIX.eps*Math.max(0,o.T-o.WB);
+    const dryLeave=Math.min(top, Math.max(FWS, air+FIX.appr));
+    const fDry=(top-dryLeave)/dt;
+    return {fDry,fWet:0,fChill:1-fDry,padded:true};
+  }
   // v178: one dry-cooler model on every cascade - a dedicated dry cooler ahead of the chiller,
   // leaving water no colder than ambient + FIX.appr. It takes whatever slice of the return-to-supply
   // span the air allows and the chiller trims the rest; warmer supply water wakes it earlier.
@@ -1880,16 +1947,23 @@ function split(o,FWS,p){
   return {fDry,fWet,fChill};
 }
 const WET_RATE=p=>(p.cascade===2?FOG_RATE:TWR_RATE);
-function waterLitres(o,FWS,p,fChillOverride){
+function waterLitres(o,FWS,p,fChillOverride,wet){
   if(p.cascade===1) return 0;
-  const tonh=(p.IT_kW*p.hc)/TON_KW, s=split(o,FWS,p);
-  if(p.cascade===2) return o.T>FOG_C ? FOG_RATE*tonh*(fChillOverride!=null?fChillOverride:s.fChill)*GAL_L : 0;
+  const tonh=(p.IT_kW*p.hc)/TON_KW;
+  if(p.cascade===2){
+    if(!wetAt(o,wet)) return 0;
+    const s=split(o,FWS,p,true), fC=(fChillOverride!=null?fChillOverride:s.fChill);
+    // v199: dry-cooler pads evaporate against the dry cooler's own share, condenser pads against the chiller's
+    const tons=(padsOnDry(p)?s.fDry:0)+(padsOnCond(p)?fC:0);
+    return FOG_RATE*tonh*tons*GAL_L;
+  }
+  const s=split(o,FWS,p);
   return TWR_RATE*tonh*s.fWet*GAL_L;
 }
 
 // ---------- UI state ----------
 const S={units:'metric',theme:'light'};
-const W={nfc:false,nfb:false,hub:'nova',IT:100,hc:1.0,chS:23,chE:10,cascade:1,hall:'liquid',RS:30,RSmax:35,FWS:26,FWShi:26,cduap:4,oh:0.10,N:20,mult:1,hdr:0,hdT:90,gc:0,pePct:80,peMode:'it',wmode:'pw',pads:'both'};
+const W={nfc:false,nfb:false,hub:'nova',IT:100,hc:1.0,chS:23,chE:10,cascade:1,hall:'liquid',RS:30,RSmax:35,FWS:26,FWShi:26,cduap:4,oh:0.10,N:20,mult:1,hdr:0,hdT:90,gc:0,pePct:80,peMode:'it',wmode:'water',pads:'both'};
 function P(){return {IT_kW:W.IT*1000, hc:W.hc, FWS:W.FWS, FWShi:Math.max(W.FWShi,W.FWS),
   wmode:(W.cascade===2?((W.wmode||'pw')==='night'?'power':(W.wmode||'pw')):'power'),
   nf:(W.cascade===2&&W.wmode==='night'), nfCap:(W.nfCap!=null?W.nfCap:NF_CAP_DEFAULT), pkw:(W.cascade===2?Math.max(0,(W.pkw||0)/100):0),
@@ -1922,7 +1996,7 @@ const thStr =kw=>kw>=1000?(kw/1000).toFixed(2)+' MWth':fmtInt(kw)+' kWth';
 // ============================================================================
 //  BASELINE — the whole year, hour by hour
 // ============================================================================
-function runAnnual(p,hd){
+function runAnnual(p,hd,spray){
   const yr=typicalYear(W.hub), hrs=yr.hrs, Q=p.IT_kW*p.hc;
   const itMW=p.IT_kW/1000, ohMW=p.oh*itMW;
   const cduMW=p.IT_kW*PUMP_CDU/1000, priMW=Q*PUMP_PRI/1000;
@@ -1932,11 +2006,11 @@ function runAnnual(p,hd){
   let hDry=0,hWet=0,hChl=0;
   for(let i=0;i<hrs.length;i++){
     const o=hrs[i];
-    const s=split(o,p.FWS,p);
-    const comp=mechEl(o,p.FWS,p,Q*s.fChill,hd)/1000;
+    const s=split(o,p.FWS,p,spray);
+    const comp=mechEl(o,p.FWS,p,Q*s.fChill,hd,spray)/1000;
     const extra=Q*(p.cascade===3?0.025*Math.min(1,s.fWet+s.fChill):0.010*Math.min(1,s.fChill+s.fDry))/1000;
     const tw=p.cascade===3?extra:0, ch=comp+(p.cascade===3?0:extra);
-    const w=waterLitres(o,p.FWS,p);
+    const w=(spray===false)?0:waterLitres(o,p.FWS,p,undefined,spray);
     it.push(itMW); anc.push(ohMW); cdu.push(cduMW); pri.push(priMW);
     twr.push(tw); chl.push(ch); wat.push(w); mech.push(comp); amb.push(o.T); wb.push(o.WB);
     const f=itMW+ohMW+cduMW+priMW+tw+ch;
@@ -2028,7 +2102,7 @@ const chargeCOP=(o,FWS,p)=>copAt(o,ICE_CHG_C,p);
 // so the leveller can flatten the thing the customer actually pays for instead of a proxy for it.
 function facBaseline(o,p,spray){
   const Q=p.IT_kW*p.hc, itMW=p.IT_kW/1000;
-  const s=split(o,p.FWS,p), th=Q*s.fChill, comp=mechEl(o,p.FWS,p,th,undefined,spray)/1000;
+  const s=split(o,p.FWS,p,spray), th=Q*s.fChill, comp=mechEl(o,p.FWS,p,th,undefined,spray)/1000;
   const extra=Q*(p.cascade===3?0.025*Math.min(1,s.fWet+s.fChill):0.010*Math.min(1,s.fChill+s.fDry))/1000;
   const fix=itMW+p.oh*itMW+p.IT_kW*PUMP_CDU/1000+Q*PUMP_PRI/1000+extra;
   return {fac:fix+comp, mech:comp, th, fix};
@@ -2487,7 +2561,11 @@ function runStorage(p,base,N,targetOverride,pre){
   // against the sub-trigger hours instead of assuming them away. The settlement then re-dispatches
   // the same gallons freely: no trigger, peak first, charge assist, all inside the same annual bill.
   const condPads=(pH.pads==null||pH.pads==='cond'||pH.pads==='both');
-  const pH2=dyn?Object.assign({},pH,{sprayDyn:(waterMode?'dry':(condPads?null:'dry'))}):pH;
+  // v192: pads on the dry coolers only (PDD) still spray by day under the legacy trigger - the plan prices those hours
+  // wet like the bill does and the settlement re-buys them; up to v191 a PDD site was planned and settled bone-dry,
+  // so its with-IceBrick peak landed ABOVE the wet legacy peak. Only the ice plant's own cells stay a condenser matter.
+  const dayPads=(pH.pads==null||pH.pads==='cond'||pH.pads==='both'||pH.pads==='dry');
+  const pH2=dyn?Object.assign({},pH,{sprayDyn:(waterMode?'dry':(dayPads?null:'dry'))}):pH;
   const wCeil=waterMode?Math.max(...bH.fac):null;
   const iceP=sizeIcePlant(hrs,FWS,pH2,Q,wCeil); ICE_CAP=iceP.cap;
   // v183 THE CHARGING PLANT FOLLOWS THE STORE. The installed cost per ton-hour already covers the charging chillers,
@@ -2650,7 +2728,8 @@ function runStorage(p,base,N,targetOverride,pre){
     const gal=r=>FOG_RATE*(r/TON_KW)*GAL_L;
     const rows=[], rowsC=[]; let waterTot=0;
     for(let i=0;i<8760;i++){
-      const o=hrs[i], s=split(o,FWS,pH2), thF=Q*s.fChill;
+      const sprayPl=(pH2.sprayDyn==='dry'?false:(pH2.sprayDyn==='wet'?true:undefined));
+      const o=hrs[i], s=split(o,FWS,pH2,sprayPl), thF=Q*s.fChill;
       const c=chgThA[i]||0;
       // FRUGAL WET FREE COOLING. The plan priced the charge into the full trench; operations only
       // wet the pads as deep as this hour's charge actually needs. A mild night whose charge fits
@@ -2684,12 +2763,16 @@ function runStorage(p,base,N,targetOverride,pre){
       }
       const th=thF-carry;
       const r=Math.max(0,th-(disThA[i]||0));
-      if(r<=1e-9&&c<=1e-9) continue;
-      if(condPads&&r>1e-9&&!wetR){   // a night-fogged residual is already wet and billed - not a row
+      // v199: with pads on the dry coolers the wet hour has LESS chiller duty, not just a better kW/ton - price both states on their own duty
+      const dcPads=padsOnDry(pH2)&&!(wfcOn&&c>1e-9);
+      const thD=dcPads?Q*split(o,FWS,pH2,false).fChill:th, thW=dcPads?Q*split(o,FWS,pH2,true).fChill:th;
+      const rD=dcPads?Math.max(0,thD-(disThA[i]||0)):r, rW=dcPads?Math.max(0,thW-(disThA[i]||0)):r;
+      if(Math.max(r,rD)<=1e-9&&c<=1e-9) continue;
+      if(dayPads&&Math.max(r,rD)>1e-9&&!wetR){   // a night-fogged residual is already wet and billed - not a row
         const fPC=FWS+pcDT(disThA[i]||0,Q), cr=1/1000;   // v182: residual at the post-cooled leaving temperature
-        const eD=mechEl(o,fPC,pH2,r,undefined,false)*cr;
-        const eW=mechEl(o,fPC,pH2,r,undefined,true)*cr;
-        const dMW=eD-eW, w=gal(r);
+        const eD=mechEl(o,fPC,pH2,rD,undefined,false)*cr;
+        const eW=mechEl(o,fPC,pH2,rW,undefined,true)*cr;
+        const dMW=eD-eW, w=dcPads?waterLitres(o,FWS,pH2,rW/Q,true):gal(r);
         if(dMW>1e-6){
           if(wetMode){
             // hours the plan priced wet (above the trigger) revert to dry here so the budgeted
@@ -2807,7 +2890,7 @@ function runDesignDayIce(p,N,st){
     base.push(b); baseC.push(comp); baseTh.push(Q*s.fChill);
     // WITH ICEBRICK — the warmer loop the Storage makes deliverable, then the Storage on top of it
     const sprayP=(dyn?(pH.sprayDyn==='dry'?false:undefined):undefined);
-    const sH=split(o,pH.FWS,pH), compH=mechEl(o,pH.FWS,pH,Q*sH.fChill,undefined,sprayP)/1000;
+    const sH=split(o,pH.FWS,pH,sprayP), compH=mechEl(o,pH.FWS,pH,Q*sH.fChill,undefined,sprayP)/1000;
     const extraH=Q*(p.cascade===3?0.025*Math.min(1,sH.fWet+sH.fChill):0.010*Math.min(1,sH.fChill+sH.fDry))/1000;
     const bH=fix+extraH+compH;
     // Split each hour's movement into the part that is pure time-shift and the part that is the plant
@@ -2851,11 +2934,30 @@ function runDesignDayIce(p,N,st){
 // ============================================================================
 const R={};
 function syncWin(){ CHG_S=((W.chS%24)+24)%24; CHG_E=W.chE; HDR_GATE=(((W.hdT||90)-32)*5)/9; }
-function computeBaseline(){ syncWin(); R.p=P(); PLANT_TH=plantTh(R.p,W.N); R.base=runAnnual(R.p,true); }
+function computeBaseline(){ syncWin(); R.p=P(); PLANT_TH=plantTh(R.p,W.N); R.base=runAnnual(R.p,true); R.dry=(R.p.cascade===2)?runAnnual(R.p,true,false):null; }
 function computeDesign(){   R.dd=runDesignDay(R.p,W.N); }
 function computeIce(){
   syncWin();
   R.st=runStorage(R.p,R.base,W.N);
+  // v193 ALL THE WATER. In water-replacement mode the knee sizes the plant for the gallons it can take cheaply; the
+  // customer asked for all of them. Climb the plant past the knee until the settlement spends nothing, and report
+  // the size that gets there (or the closest the ladder reaches) next to the knee answer.
+  R.w100=null;
+  if(R.p.cascade===2&&R.p.wmode==='water'){
+    // The last gallons sit on the hottest nights, where nothing more can be banked under today's peak - a bigger
+    // plant does not reach them, a bigger STORE does: ice made on the cooler nights before and carried across.
+    // That is the storage-nights multiplier (the MU token), so climb it until the year is dry.
+    const tol=Math.max(1,0.002*R.base.water), mu0=Math.max(1,W.mult||1);
+    let best=R.st, bestMu=mu0;
+    if(R.st.waterI>tol){
+      for(const mu of [2,3,4]){ if(mu<=mu0)continue; W.mult=mu; const st2=runStorage(R.p,R.base,W.N);
+        if(st2.waterI<best.waterI-1){best=st2; bestMu=mu;}
+        if(st2.waterI<=tol)break; }
+      W.mult=bestMu;
+    }
+    R.w100={ok:best.waterI<=tol, st:best, knee:R.st, mu:bestMu, mu0};
+    R.st=best;   // the run the page shows is the driest one the carry can reach
+  }
   // v166 WATER FOR THE PEAK: spend the allowance on the hard days, lowest ceiling that the purse can hold
   if(R.p.cascade===2&&R.p.pkw>0&&R.p.wmode!=='water'&&R.st.targetWet!=null&&isFinite(R.st.targetWet)){
     const st0=R.st, T0=st0.targetNat, Tw=Math.min(T0,st0.targetWet), allow=R.base.water*R.p.pkw;
@@ -2970,13 +3072,10 @@ function zoomOpts(linked){const cb=linked?(({chart})=>{mirrorZoom(chart);syncPan
 var zSyncing=false;
 function mirrorZoom(src){
   if(zSyncing)return;
-  const other = src===chB1?chB2 : src===chB2?chB1 : null;
-  if(!other)return;
+  const others=[chB0,chB1,chB2].filter(ch=>ch&&ch!==src); if(!others.length)return;
   const sx=src.scales.x; if(!sx)return;
-  const ox=other.scales.x;
-  if(ox&&Math.abs(ox.min-sx.min)<1e-6&&Math.abs(ox.max-sx.max)<1e-6)return;
   zSyncing=true;
-  try{ other.zoomScale('x',{min:sx.min,max:sx.max},'none'); }catch(e){}
+  others.forEach(other=>{ const ox=other.scales.x; if(ox&&Math.abs(ox.min-sx.min)<1e-6&&Math.abs(ox.max-sx.max)<1e-6)return; try{ other.zoomScale('x',{min:sx.min,max:sx.max},'none'); }catch(e){} });
   zSyncing=false;
 }
 // THE TOOLTIP GETS OUT OF ITS OWN WAY. Chart.js parks the panel on the point it is describing, which
@@ -3102,9 +3201,9 @@ const S2P=(()=>{
     'CAISO':{name:'CAISO',off:[],src:''},'MISO':{name:'MISO',off:[],src:''},'SPP':{name:'SPP',off:[],src:''},
     'APS':{name:'APS (Arizona)',off:[],src:''},'NVE':{name:'NV Energy',off:[],src:''},'XCEL':{name:'Xcel (Colorado)',off:[],src:''},
     'PAC':{name:'PacifiCorp',off:[],src:''},'BPA':{name:'BPA / Pacific NW',off:[],src:''},'GPC':{name:'Georgia Power',off:[],src:''},
-    'MH':{name:'Manitoba Hydro',off:[],src:''},'IEC':{name:'IEC (Israel)',off:[],src:''}};
+    'MH':{name:'Manitoba Hydro',off:[],src:''},'IEC':{name:'IEC (Israel)',off:[],src:''},'NEM':{name:'AEMO · NEM',off:[],src:''}};
   const SITE_GRID={nova:'PJM',apx:'PJM',cmh:'PJM',chi:'PJM',nyc:'NYISO',dfw:'ERCOT',aus:'ERCOT',svl:'CAISO',atl:'GPC',mci:'SPP',lit:'MISO',
-    slc:'PAC',las:'NVE',rno:'NVE',den:'XCEL',phx:'APS',pdx:'BPA',sea:'BPA',yak:'BPA',bdn:'MH',shm:'IEC'};
+    slc:'PAC',las:'NVE',rno:'NVE',den:'XCEL',phx:'APS',pdx:'BPA',sea:'BPA',yak:'BPA',bdn:'MH',shm:'IEC',bfl:'CAISO',syd:'NEM',mel:'NEM',bne:'NEM',per:'NEM',cbr:'NEM',adl:'NEM'};
   const DIM=[31,28,31,30,31,30,31,31,30,31,30,31], MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const hIdx=(m,d,h)=>{let n=0; for(let i=0;i<m-1;i++)n+=DIM[i]; return (n+d-1)*24+h;};
   const idxLbl=i=>{let d=Math.floor(i/24), m=0; while(d>=DIM[m]){d-=DIM[m];m++;} return MON[m]+' '+(d+1)+' '+String(i%24).padStart(2,'0')+':00';};
@@ -3456,7 +3555,7 @@ let STEP=0; const NSTEP=9;
 // v145 THE FORK. Steps 6 and 7 belong to one branch each: 6 (the event) to Speed to Power, 7 (the
 // IceBrick tie-in) to Power Envelope. goStep walks over the one that is not on the chosen path.
 W.mode=W.mode||'pe'; W.s2start=14; W.s2dur=4; W.s2grid=null;
-const stepVisible=n=>n===6?false:(n===7?W.mode==='pe':true);   // v157: the event is set on the results page, not in the wizard
+const stepVisible=n=>(n===6||n===7)?false:true;   // v157: the event is set on the results page · v195: no Spike Shield question, no before/after animation
 function setMode(m){ W.mode=m; $('mode_pe').classList.toggle('sel',m==='pe'); $('mode_s2p').classList.toggle('sel',m==='s2p'); recap(); dots(); }
 $('mode_pe').addEventListener('click',()=>{setMode('pe'); goStep(1);});
 function syncNf(){ [...$('nfcgrid').children].forEach(x=>x.classList.toggle('sel',(x.dataset.nfc==='1')===!!W.nfc));
@@ -3485,6 +3584,7 @@ function syncS2W(){ const g=W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'; $('s2w_igrid'
   pdx:[89.3,85.6,13,4,'start','Portland'],
   rno:[103.6,227,-12,-2,'end','Reno'],
   svl:[55.9,264,12,15,'start','Silicon Valley'],
+  bfl:[97,316,-12,13,'end','Bakersfield'],
   las:[165.2,317.8,12,4,'start','Las Vegas'],
   phx:[208.2,387.3,12,4,'start','Phoenix'],
   slc:[238.4,227.7,12,4,'start','Salt Lake City'],
@@ -3523,6 +3623,26 @@ function syncS2W(){ const g=W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'; $('s2w_igrid'
        '</g>';
   }
   sv.innerHTML=g;
+  // v191 AUSTRALIA - same grammar on a second, collapsed map
+  const AU_LAND='M580.3,39.7L599.3,98.7L622.7,120.0L635.8,170.9L673.8,198.8L700.1,234.8L735.2,279.1L742.5,326.7L736.6,361.1L726.4,393.9L708.9,418.5L698.7,443.1L689.9,477.6L660.7,485.8L637.3,505.4L616.8,495.6L596.4,502.2L567.1,494.0L549.6,485.8L539.4,457.9L527.7,449.7L517.5,448.0L508.7,441.5L498.5,443.1L492.6,430.0L480.9,436.6L473.6,430.0L460.5,407.0L434.2,389.0L412.3,382.4L383.0,384.1L353.8,393.9L324.6,407.0L302.7,420.2L273.4,418.5L245.7,426.7L222.3,439.8L200.4,438.2L179.9,426.7L178.5,415.2L188.7,395.6L190.1,377.5L177.0,344.7L163.8,320.1L155.1,293.9L153.6,274.2L160.9,241.4L165.3,223.4L184.3,211.9L204.8,202.0L229.6,195.5L254.4,190.6L277.8,169.2L288.0,147.9L301.2,138.1L315.8,120.0L331.9,103.6L352.3,93.8L371.3,108.6L388.9,110.2L396.2,85.6L403.5,64.3L421.0,51.2L440.0,52.8L463.4,61.0L485.3,62.6L498.5,69.2L495.5,93.8L483.9,110.2L491.2,125.0L511.6,136.4L532.1,152.8L552.5,151.2L564.2,126.6L570.1,90.5L578.8,52.8ZM612.4,531.7L635.8,539.9L663.6,535.0L666.5,556.3L659.2,574.3L644.6,579.2L631.4,577.6L621.2,557.9L612.4,541.5Z', AU_STATES='M383.0,108.6L383.0,384.1M514.5,136.4L514.5,290.6M514.5,290.6L558.4,290.6M558.4,290.6L558.4,421.8M558.4,339.8L741.0,339.8M558.4,421.8L594.9,434.9L631.4,454.6L663.6,467.7L688.4,479.2';
+  const AUXY={"syd": [707.4, 420.2, 12, 4, "start", "Sydney"], "cbr": [676.7, 443.1, -12, 14, "end", "Canberra"], "mel": [616.8, 484.1, -12, 16, "end", "Melbourne"], "bne": [733.7, 315.2, 12, 4, "start", "Brisbane"], "adl": [523.3, 436.6, -12, -4, "end", "Adelaide"], "per": [191.6, 387.4, -12, 4, "end", "Perth"]};
+  const sa=$('aumap');
+  if(sa){
+    let ga='<path class="land" d="'+AU_LAND+'"/><path class="states" d="'+AU_STATES+'"/>';
+    for(const k in AUXY){
+      const [x,y,dx,dy,an,short]=AUXY[k], h=HUBS[k];
+      const tw=short.length*7.1+6, lL=(an==='end')?(x+dx-tw):(x+dx), lR=lL+tw,
+        rx=Math.min(x-17,lL-3), ry=Math.min(y-17,y+dy-13),
+        rw=Math.max(x+17,lR+3)-rx, rh=Math.max(y+17,y+dy+6)-ry;
+      ga+='<g class="hub'+(k===W.hub?' sel':'')+'" data-hub="'+k+'" tabindex="0" role="button" aria-label="'+h.name+'">'+
+         '<rect class="hit" x="'+rx.toFixed(1)+'" y="'+ry.toFixed(1)+'" width="'+rw.toFixed(1)+'" height="'+rh.toFixed(1)+'" rx="9" fill="transparent"/>'+
+         '<circle class="halo" cx="'+x+'" cy="'+y+'" r="16"/><circle class="ping" cx="'+x+'" cy="'+y+'" r="14"/><circle class="dot" cx="'+x+'" cy="'+y+'" r="6"/>'+
+         '<text class="lbl" x="'+(x+dx)+'" y="'+(y+dy)+'" text-anchor="'+an+'">'+short+'</text></g>';
+    }
+    sa.innerHTML=ga;
+    sa.addEventListener('click',e=>{const o=e.target.closest('.hub'); if(o)pickHub(o.dataset.hub);});
+    sa.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ')return; const o=e.target.closest('.hub'); if(o){e.preventDefault(); pickHub(o.dataset.hub);} });
+  }
   sv.addEventListener('click',e=>{const o=e.target.closest('.hub'); if(o)pickHub(o.dataset.hub);});
   sv.addEventListener('keydown',e=>{
     if(e.key!=='Enter'&&e.key!==' ')return;
@@ -3543,6 +3663,8 @@ function syncS2W(){ const g=W.s2grid||S2P.SITE_GRID[W.hub]||'PJM'; $('s2w_igrid'
 function syncHub(){
   const h=HUBS[W.hub];
   [...$('usmap').querySelectorAll('.hub')].forEach(x=>x.classList.toggle('sel',x.dataset.hub===W.hub));
+  {const sa=$('aumap'); if(sa)[...sa.querySelectorAll('.hub')].forEach(x=>x.classList.toggle('sel',x.dataset.hub===W.hub));
+   const f=$('aufold'); if(f&&h.au)f.open=true;}
   [...$('hubgrid').children].forEach(x=>x.classList.toggle('sel',x.dataset.hub===W.hub));
   $('map_name').textContent=h.name;
   $('map_sub').textContent=h.sub+' · '+h.clim;
@@ -3568,11 +3690,12 @@ function pickHub(k){
     const wm=$('wmwrap');
     if(W.cascade===2){ if(wm)wm.style.display=''; recap(); }   // adiabatic: ask the goal before moving on
     else { if(wm)wm.style.display='none'; W.wmode='pw'; recap(); if(again)setTimeout(()=>goStep(4),260); }
+    if(W.cascade===2&&W.wmode==='pw'&&!W.wmodeTouched){ W.wmode='water'; const wg2=$('wmgrid'); if(wg2)[...wg2.children].forEach(x=>x.classList.toggle('sel',x.dataset.w==='water')); }
   });
   const wg=$('wmgrid');
   if(wg)wg.addEventListener('click',e=>{
     const o=e.target.closest('.opt'); if(!o)return;
-    W.wmode=o.dataset.w; W.wmodeLegacy=null;
+    W.wmode=o.dataset.w; W.wmodeLegacy=null; W.wmodeTouched=true;
     {const c=$('i_nfcap'); const v=c?parseFloat(c.value):NaN; W.nfCap=isFinite(v)&&v>=0?v:NF_CAP_DEFAULT;}
     [...wg.children].forEach(x=>x.classList.toggle('sel',x===o));
     recap(); setTimeout(()=>goStep(4),260);
@@ -3614,19 +3737,19 @@ function applyHall(){
   if(air)W.cduap=0;
   const lb=$('lb_rs');  if(lb)lb.textContent = air?'Chilled water supply to the hall':'Supply temperature to the racks';
   const l2=$('lb_rs2'); if(l2)l2.textContent = air?'Chilled water supply to the hall':'Supply temperature to the racks';
+  const af=$('animfold'); if(af)af.style.display=air?'none':'';   // v196: the animations sit collapsed on this question; an air hall has no CDU loop to show
   const wA=$('animA_w'); if(wA)wA.style.display=air?'none':'';
   const scap=$('schemecap'); if(scap)scap.style.display=air?'':'none';
-  const wB=$('animB_w'); if(wB)wB.style.display=air?'none':'';
-  // v159: the SLA sliders (wizard and results) only exist for a liquid hall
-  ['i_rsmax','i_rsmax2'].forEach(id=>{const e=$(id); if(e){const w=e.closest('.sl'); if(w)w.style.display=air?'none':'';}});
+  const wB=$('schemeB'); if(wB)wB.style.display=air?'none':'';
+  // v195: no maximum-allowable slider anywhere - the rack supply is the one number, FWShi = FWS
+  ['i_rsmax','i_rsmax2'].forEach(id=>{const e=$(id); if(e){const w=e.closest('.sl'); if(w)w.style.display='none';}});
   const t=$('q5title'); if(t)t.textContent = air ? 'How you run now' : 'How you run now';
   const q=$('q5help');  if(q)q.innerHTML = air
     ? `With no CDU in the loop there is no step to lose: the water your plant makes is the water your coils get. So we `+
-      `ask for that number, and the entire study runs on it — there is no CDU to tie IceBrick into, so no Spike Shield and no warmer loop.`
+      `ask for that number, and the entire study runs on it.`
     : `Your IT does not see facility water &mdash; it sees whatever comes out of the CDU, one heat exchanger later. So `+
-      `we ask for the number your racks are promised, the ceiling your SLA allows, and the step the CDU adds. Facility `+
-      `water is then whatever the plant has to make to deliver it, and that is the loop the entire <i>before</i> `+
-      `analysis runs on.`;
+      `we ask for the number your racks are promised and the step the CDU adds. Facility `+
+      `water is then whatever the plant has to make to deliver it, and that is the loop the whole analysis runs on.`;
   [...($('hallgrid')?$('hallgrid').children:[])].forEach(x=>x.classList.toggle('sel',x.dataset.h===W.hall));
   syncWizLabels(); recap();
 }
@@ -3655,7 +3778,7 @@ function rsBounds(){ return W.hall==='air' ? [15,AIR_TMAX] : [15+W.cduap, RACK_T
 function syncRack(){
   const b=rsBounds();
   W.RS   = Math.min(b[1],Math.max(b[0],W.RS));
-  if(W.hall==='air') W.RSmax=W.RS;   // v159: no CDU, no Spike Shield on an air hall - the ceiling is today's chilled water
+  W.RSmax=W.RS;   // v159 air · v195 every hall: one supply temperature, no SLA uplift
   W.RSmax= Math.min(b[1],Math.max(b[0],Math.max(W.RSmax,W.RS)));
   W.FWS   = Math.round((W.RS   -W.cduap)*100)/100;
   W.FWShi = Math.round((W.RSmax-W.cduap)*100)/100;
@@ -3843,7 +3966,7 @@ function sizeITToEnvelope(){
 }
 // DESERT / MOUNTAIN HUBS (v168): dry nights, wet-bulb well under the supply - the sweep says night fogging is the
 // mode that wins there (+2 to +3 MW per 100 MW at SLA 30, water within today's bill). The stamp follows the hub.
-const NF_HUBS=new Set(['las','phx','slc','den','rno','yak']);
+const NF_HUBS=new Set(['las','phx','slc','den','rno','yak','bfl']);
 function syncStamp(){const e=$('nf_stamp'); if(e)e.classList.toggle('on',NF_HUBS.has(W.hub));}
 function recap(){
   try{ if(sizeITToEnvelope())syncWizLabels(); }catch(e){}
@@ -3879,7 +4002,7 @@ function recapRows(){
       W.nfc?(W.nfb?'the charging draw never appears on the site meter; a Li-ion battery, charged from the feed at night, carries the ice circuit\u2019s pumps through every discharge'
                   :'the charging draw never appears on the site meter; by day the ice circuit\u2019s pumps ride the site meter while the store discharges')
            :'charging fills the valleys under the same ceiling the store protects'],
-    ['Cooling cascade',c.name+(W.cascade===2?(W.wmode==='night'?' \u00b7 night-fogging':' \u00b7 power first, water second'):''),c.short+(W.cascade===2&&W.wmodeLegacy?` \u00b7 the run-ID asked for ${W.wmodeLegacy==='water'?'water optimisation':'power optimisation'}, a mode that no longer exists; it re-runs under power first, water second`:'')],
+    ['Cooling cascade',c.name+(W.cascade===2?(W.wmode==='night'?' \u00b7 night-fogging':(W.wmode==='water'?' \u00b7 water replaced by ice':' \u00b7 power first, water second')):''),c.short+(W.cascade===2&&W.wmodeLegacy?` \u00b7 the run-ID asked for ${W.wmodeLegacy==='water'?'water optimisation':'power optimisation'}, a mode that no longer exists; it re-runs under power first, water second`:'')],
     ['Data hall',HALLS[W.hall].name,HALLS[W.hall].short],
     [W.hall==='air'?'Chilled water to the hall':'Supply to the racks',tA1(W.RS),
       W.hall==='air'
@@ -4121,7 +4244,7 @@ $('go_run').addEventListener('click',runAnalysis);
 //  because two builds can price the same inputs slightly differently.
 function parseRunCode(t){
   t=String(t||'').replace(/[\u2010-\u2015\u2212]/g,'-').toUpperCase();
-  const m=t.match(/IB8760-(\d+)-([A-Z]{3,4})-IT([\d.]+)-HC(\d+)-C([123])-(AIR|LIQ)-RS([\d.]+)-SLA([\d.]+)-AP([\d.]+)-FWS([\d.]+)-HI([\d.]+)-OH(\d+)(?:-HD([\d.]+))?(?:-CS(\d+))?(?:-DS(\d+))?-N(\d+)-MU([\d.]+)(?:-GC([\d.]+))?(?:-PP(\d+))?(?:-HT(\d+))?(?:-(WO|PW))?(?:-NF([\d.]+))?(?:-PD([CDB]))?(?:-S2P(\d+)X(\d+)([A-Z]+))?(?:-NFC(B)?)?(?:-PKW(\d+))?/);
+  const m=t.match(/IB8760-(\d+)-([A-Z]{3,4})-IT([\d.]+)-HC(\d+)-C([123])-(AIR|LIQ)-RS([\d.]+)-SLA([\d.]+)-AP([\d.]+)-FWS([\d.]+)-HI([\d.]+)-OH(\d+)(?:-HD([\d.]+))?(?:-CS(\d+))?(?:-DS(\d+))?-N(\d+)-MU([\d.]+)(?:-GC([\d.]+))?(?:-PP(\d+))?(?:-HT(\d+))?(?:-(WO|PW))?(?:-NF([\d.]+))?(?:-PD([CDB]))?(?:-S2P(\d+)X(\d+)([A-Z]+))?(?:-NFC(B)?)?(?:-PKW(\d+))?(?:-TR([\d.]+))?/);
   if(!m) return {err:'That does not read as an IceBrick simulation ID — it should start with IB8760- and carry all its fields.'};
   const hub=m[2].toLowerCase();
   if(!HUBS[hub]) return {err:'Unknown site code "'+m[2]+'" — this build knows '+Object.keys(HUBS).map(k=>k.toUpperCase()).join(', ')+'.'};
@@ -4130,7 +4253,7 @@ function parseRunCode(t){
   const F=x=>parseFloat(x);
   const o={ver:m[1], hub, IT:F(m[3]), hc:F(m[4])/100, cascade:+m[5], hall:m[6]==='AIR'?'air':'liquid',
            RS:F(m[7]), RSmax:F(m[8]), cduap:F(m[9]), FWS:F(m[10]), FWShi:F(m[11]), oh:F(m[12])/100, hdr:m[13]!=null?F(m[13]):0, chS:m[14]!=null?Math.round(F(m[14]))%24:23, chE:m[15]!=null?Math.round(F(m[15])):10, N:F(m[16]), mult:F(m[17]), gc:m[18]!=null?F(m[18]):0, pePct:m[19]!=null?F(m[19]):80, hdT:m[20]!=null?F(m[20]):90, wmode:(m[21]==='WO'&&+m[5]===2)?'water':((m[21]==='PW'&&+m[5]===2)?'pw':((m[22]!=null&&+m[5]===2)?'night':'power')), nfCap:(m[22]!=null?F(m[22]):NF_CAP_DEFAULT),
-           pads:(m[23]==='C'?'cond':(m[23]==='D'?'dry':'both')), mode:(m[24]!=null?'s2p':'pe'), s2start:(m[24]!=null?+m[24]:14), s2dur:(m[25]!=null?+m[25]:4), s2grid:(m[26]||null), nfc:/-NFCB?(?:-|$)/.test(t), nfb:/-NFCB(?:-|$)/.test(t), pkw:(m[28]!=null?+m[28]:0)};
+           pads:(m[23]==='C'?'cond':(m[23]==='D'?'dry':'both')), mode:(m[24]!=null?'s2p':'pe'), s2start:(m[24]!=null?+m[24]:14), s2dur:(m[25]!=null?+m[25]:4), s2grid:(m[26]||null), nfc:/-NFCB?(?:-|$)/.test(t), nfb:/-NFCB(?:-|$)/.test(t), pkw:(m[28]!=null?+m[28]:0), trig:(m[29]!=null?F(m[29]):null)};
   if(!(o.IT>=1&&o.IT<=1000)) return {err:'IT nameplate '+o.IT+' MW is outside the 1–1000 MW range.'};
   if(!(o.N>=1&&o.N<=50))     return {err:'Design return period N'+o.N+' is outside 1–50.'};
   if(!(o.mult>=1&&o.mult<=4))return {err:'Storage-nights multiplier '+o.mult+' is outside 1–4.'};
@@ -4149,8 +4272,9 @@ function runFromCode(){
   W.hdT=o.hdT||90; if($('i_hdt'))$('i_hdt').value=String(W.hdT);
   // v168: two adiabatic modes survive. An old ID asking for power optimisation or water optimisation re-runs
   // under power first / water second (the nearest surviving rule) and the recap says so.
-  W.wmodeLegacy=null; let wmIn=o.wmode||'pw'; if(wmIn==='power'||wmIn==='water'){W.wmodeLegacy=wmIn; wmIn='pw';}
+  W.wmodeLegacy=null; let wmIn=o.wmode||'water'; if(wmIn==='power'){W.wmodeLegacy=wmIn; wmIn='pw';}   // v193: -WO is water-to-ice again
   W.wmode=wmIn; W.nfCap=(o.nfCap!=null?o.nfCap:NF_CAP_DEFAULT);
+  W.trig=(o.trig!=null&&isFinite(o.trig))?o.trig:null; FOG_C=(W.trig!=null)?W.trig:FOG_C0;
   W.pads=o.pads||'both';
   W.nfc=!!o.nfc; W.nfb=!!o.nfb; syncNf(); W.pkw=o.pkw||0; try{syncPkw();}catch(e){}
   W.mode=o.mode||'pe'; W.s2start=o.s2start||14; W.s2dur=o.s2dur||4; W.s2grid=(o.s2grid&&S2P.GRIDS[o.s2grid])?o.s2grid:null; setMode(W.mode);
@@ -4241,10 +4365,11 @@ function openResults(){
   window.scrollTo({top:0,behavior:'auto'});
   // v145: Speed to Power shows its own results on the same baseline; the envelope chapters stay hidden
   const s2p=(W.mode==='s2p');
-  ['respanel','act1','act2','act3','act4'].forEach(id=>{const e=$(id); if(e)e.style.display=s2p?'none':'';});
+  ['respanel','act1','act2','act3'].forEach(id=>{const e=$(id); if(e)e.style.display=s2p?'none':'';});   // v2.02: the 'next level' ask box is retired
   $('v_s2p').style.display=s2p?'':'none';
   $('pdfnote').textContent=s2p?'The Speed-to-Power study: configuration, the commitment, the ten coincident peaks, the event day and the sizing curve, one document. You will be asked to name the run first.':'The whole study \u2014 the baseline chapters and the IceBrick chapters, one document. You will be asked to name the run first.';
   try{paintRunMatrix();}catch(e){}
+  if(!s2p) setTimeout(()=>{ try{ if(STAGE==='res'&&!NEXTOPEN) revealNextLevel(); }catch(e){console.error(e);} },350);   // v193: straight through to the end
   if(s2p){ $('res_eyebrow').textContent='Speed to Power'; $('res_intro').textContent=`${HUBS[W.hub].name} · ${W.IT} MW of IT · ${CASCADES[W.cascade].name} · the year is run, the event is priced on the day the grid peaked.`;
     S2P.show(); showEl('act_pdf'); paintRunCode(); return; }
   syncResWater();
@@ -4331,7 +4456,7 @@ $('y_right').addEventListener('click',e=>{const b=e.target.closest('button');if(
 $('y_reset').addEventListener('click',()=>chYear&&chYear.resetZoom());
 // the two before/after charts share one y band and are meant to be read together,
 // so either Reset zoom button pulls both back out to the full 8,760 hours
-function resetBoth(){ if(chB1)chB1.resetZoom(); if(chB2)chB2.resetZoom(); syncPan(chB1); }
+function resetBoth(){ if(chB0)chB0.resetZoom(); if(chB1)chB1.resetZoom(); if(chB2)chB2.resetZoom(); syncPan(chB1); }
 // v140 PAN SLIDER. Once the pair is zoomed, a slider under each chart walks the same window across the
 // year - both charts move together, exactly as a drag-zoom does. Hidden at full-year zoom.
 function panSliders(){return ['b1_pan','b2_pan'].map(id=>$(id)).filter(Boolean);}
@@ -4347,6 +4472,8 @@ panSliders().forEach(sl=>sl.addEventListener('input',()=>{
   panSliders().forEach(o=>{ if(o!==sl) o.value=sl.value; });
 }));
 $('b1_reset').addEventListener('click',resetBoth);
+{const b0=$('b0_reset'); if(b0)b0.addEventListener('click',resetBoth);}
+{const s=$('i_trig'); if(s){ s.addEventListener('input',()=>{const v=$('v_trig'); if(v)v.textContent=tA1(parseFloat(s.value));}); s.addEventListener('change',()=>rerunTrigger(parseFloat(s.value))); }}
 $('b2_reset').addEventListener('click',resetBoth);
 // both deep-dives are opt-in: closed until asked for, re-drawable, and closable again
 let CV_OPEN=false;
@@ -4634,7 +4761,7 @@ function openLeadGate(onSuccess){
 // ============================================================================
 //  THE NEXT LEVEL
 // ============================================================================
-$('go_next').addEventListener('click',()=>{ openLeadGate(revealNextLevel); });
+$('go_next').addEventListener('click',()=>{ revealNextLevel(); });   // v193: no lead gate
 function revealNextLevel(){
   const btn=$('go_next'); btn.disabled=true; btn.textContent='Charging the battery…';
   setTimeout(()=>{
@@ -4642,8 +4769,9 @@ function revealNextLevel(){
       const eb0=document.getElementById('nx_err'); if(eb0)eb0.remove();
       computeIce();
       showEl('nextlevel');
-      paintIce(); drawB1(); drawB2(); drawND(); drawMon(); drawCV(); drawFD(); try{adPaint();}catch(e){console.error(e);}
-      ['act5','act6','act7','act8','actApp','actAd','act9'].forEach((a,i)=>setTimeout(()=>$(a).classList.add('in'),100+i*220));
+      paintIce(); drawB0(); drawB1(); drawB2(); drawND(); drawMon(); drawCV(); drawFD(); try{adPaint();}catch(e){console.error(e);} try{drawW3();}catch(e){console.error(e);}
+      ['actW','act5','act6','act7','act8','actApp','actAd','act9'].forEach((a,i)=>setTimeout(()=>$(a).classList.add('in'),100+i*220));
+      setTimeout(()=>{try{w100Search();}catch(e){console.error(e);}},900);
       NEXTOPEN=true;
       showEl('act_pdf'); paintRunCode();
       btn.textContent='Scroll down — it is all below';
@@ -5106,9 +5234,136 @@ function yearOpts(c,mn,mx,linked){return {responsive:true,maintainAspectRatio:fa
 // both year charts share one y band so the two panels are literally comparable
 function bandY(){const b=R.base, st=R.st;
   const lo=Math.min(Math.min.apply(null,b.fac),Math.min.apply(null,st.iceFac));
-  const hi=Math.max(b.pkFac,st.pkMW);
+  // v194: the battery-off reference (dry-priced on the water cascade) and the realised line can both stand above the two peaks - fit them too
+  const hiRef=(st.baseHi&&st.baseHi.length)?Math.max.apply(null,st.baseHi):-Infinity;
+  const hi=Math.max(b.pkFac,st.pkMW,hiRef,Math.max.apply(null,st.iceFac),(R.dry?R.dry.pkFac:-Infinity));
   const pad=Math.max(.15,(hi-lo)*0.10);
   return [Math.floor((lo-pad)*10)/10, Math.ceil((hi+pad)*10)/10];}
+// v200 WHAT WOULD GET TO ZERO. When the ice cannot take all the water as the site stands, try the two knobs the
+// customer owns - the pad trigger (up) and the facility water (down) - one step at a time, in the background, and
+// report the first setting on each axis that ends the year dry, with the store it takes.
+let w100Busy=false, w100Seq=0;
+function w100Search(){
+  const el=$('w3_reco'); if(!el)return;
+  if(!(R.w100&&!R.w100.ok&&R.p&&R.p.cascade===2&&R.p.wmode==='water')){ el.style.display='none'; return; }
+  if(w100Busy)return; w100Busy=true; const seq=++w100Seq;
+  el.style.display=''; el.innerHTML='<b>Looking for the setting that ends the year dry…</b>';
+  const base={RS:W.RS,RSmax:W.RSmax,FOG:FOG_C,mult:W.mult}, found={trig:null,fws:null}, tried=[];
+  const cands=[{k:'trig',v:35},{k:'trig',v:38},{k:'fws',d:-2},{k:'fws',d:-4},{k:'fws',d:-6},{k:'fws',d:-8}];
+  const tol=()=>Math.max(1,0.002*R.base.water);
+  const restore=()=>{ FOG_C=base.FOG; W.RS=base.RS; W.RSmax=base.RSmax; W.mult=base.mult; syncRack(); computeBaseline(); };
+  const tryOne=c=>{
+    if(c.k==='trig'){ if(c.v<=base.FOG+0.01)return null; FOG_C=c.v; }
+    else { const rs=base.RS+c.d; if(rs-W.cduap<15)return null; W.RS=rs; W.RSmax=rs; syncRack(); }
+    W.mult=1; computeBaseline();
+    let st=runStorage(R.p,R.base,W.N), mu=1;
+    if(st.waterI>tol()) for(const m of [2,3,4]){ W.mult=m; const s2=runStorage(R.p,R.base,W.N); if(s2.waterI<st.waterI-1){st=s2; mu=m;} if(st.waterI<=tol())break; }
+    return {k:c.k, fws:R.p.FWS, trig:FOG_C, ok:st.waterI<=tol(), water:R.base.water, left:st.waterI, store:st.storMaxTh, plant:st.icePlantTh, mu, padsMW:(R.dry?R.dry.pkFac-R.base.pkFac:0)};
+  };
+  let i=0;
+  const step=()=>{
+    if(seq!==w100Seq){ w100Busy=false; return; }
+    while(i<cands.length&&((cands[i].k==='trig'&&found.trig)||(cands[i].k==='fws'&&found.fws)))i++;
+    if(i>=cands.length){ restore(); w100Busy=false; paint(); return; }
+    const c=cands[i++];
+    try{ const r=tryOne(c); if(r){ tried.push(r); if(r.ok)found[r.k]=r; } }catch(e){ console.error(e); }
+    restore();
+    setTimeout(step,40);
+  };
+  const paint=()=>{
+    const ton=x=>fmtInt(x/TON_KW), left=R.st.waterI;
+    const line=r=>`${r.k==='trig'?'raise the pad trigger to '+tA1(r.trig):'run the facility water at '+tA1(r.fws)+' (racks '+tA1(r.fws+W.cduap)+')'} — the pads then spend ${fmtInt(wConv(r.water))} ${wUnit()}/yr and trim ${r.padsMW.toFixed(1)} MW; the ice takes all of it with <b>${ton(r.store)} ton-h</b>${r.mu>1?' ('+r.mu+' nights of carry)':''} and a ${ton(r.plant)} RT plant`;
+    let s=`<b>To end the year at zero water on this site</b> (today ${fmtInt(wConv(left))} ${wUnit()} remain): `;
+    const parts=[]; if(found.trig)parts.push(line(found.trig)); if(found.fws)parts.push(line(found.fws));
+    if(parts.length) s+=parts.join('; <b>or</b> ')+'.';
+    else s+=`neither a pad trigger up to ${tA1(38)} nor facility water ${tD1(8)} colder gets there within four nights of carry.`;
+    s+=` Raising the trigger shrinks what the pads do today, so the ice has a trim to replace rather than the whole plant; colder water does the same from the other side, because padded dry coolers can no longer carry the loop alone.`;
+    el.innerHTML=s;
+  };
+  setTimeout(step,60);
+}
+let chW3=null;
+function drawW3(){
+  const wrap=$('actW'); if(!wrap)return;
+  if(!(R.p&&R.p.cascade===2&&R.st&&R.base)){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  const c=C(), b=R.base, st=R.st, p=R.p, hrs=typicalYear(W.hub).hrs, itE=b.itE;
+  // no means: the same plant with the pads never wetted
+  const dry=new Array(8760); let dryPk=0, dryE=0;
+  for(let i=0;i<8760;i++){ const m=facBaseline(hrs[i],p,false).mech; dry[i]=m; dryE+=m; if(m>dryPk)dryPk=m; }
+  const wet=b.mech, wetPk=Math.max(...wet), wetE=wet.reduce((a,x)=>a+x,0);
+  const ice=st.mechI, icePk=Math.max(...ice), iceE=ice.reduce((a,x)=>a+x,0);
+  const w3=R.w100, ok=!!(w3&&w3.ok), knee=w3?w3.knee:st;
+  const wue=b.water/(itE*1000), wueI=st.waterI/(itE*1000);
+  const ton=x=>fmtInt(x/TON_KW);
+  $('w3_lead').innerHTML=`Same plant, same ${b.yrCal||'measured'} year, chillers only. First with nothing helping them; then with the adiabatic pads your trigger sprays today, and what that water costs; then with IceBrick carrying those hours dry. `+
+    (ok?`On this site the ice <b>takes all of the water</b>: ${fmtInt(wConv(b.water))} ${wUnit()} a year, WUE ${wue.toFixed(2)} L/kWh, gone, at the same peak the pads hold today.`
+       :`On this site even ${w3?w3.mu:1} nights of carried ice leave ${fmtInt(wConv(st.waterI))} ${wUnit()} of the ${fmtInt(wConv(b.water))}: the hottest nights cannot bank enough under today's peak.`);
+  const tile=(lb,a,b2,sub,cls)=>`<div class="kpi ${cls||'savings'}"><div class="k-label">${lb}</div><div class="k-num">${b2!=null?`<span class="a">${a}</span> <span class="arrow">→</span> <span class="b">${b2}</span>`:`<span class="b">${a}</span>`}</div><div class="k-sub">${sub}</div></div>`;
+  $('w3_tiles').innerHTML=
+    tile('Chiller peak · no means → water',dryPk.toFixed(2)+' MW',wetPk.toFixed(2)+' MW',`the pads take ${(dryPk-wetPk).toFixed(2)} MW off the worst hour for ${fmtInt(wConv(b.water))} ${wUnit()}/yr · WUE ${wue.toFixed(2)} L/kWh`)+
+    tile('Chiller peak · water → ice',wetPk.toFixed(2)+' MW',icePk.toFixed(2)+' MW',ok?`same envelope, ${fmtInt(wConv(b.water))} ${wUnit()} of water not drawn`:`${fmtInt(wConv(st.waterI))} ${wUnit()} still sprayed · WUE ${wueI.toFixed(2)} L/kWh`)+
+    tile('Storage for a dry year',ton(st.storMaxTh)+' ton-h',null,`ice plant ${ton(st.icePlantTh)} RT · ${(w3&&w3.mu>1)?w3.mu+' nights of carry · ':''}${st.cycDays} cycles/yr · charged at night under the same ${wetPk.toFixed(2)} MW`)+
+    tile('Chiller energy · no means / water / ice',fmtInt(dryE)+' / '+fmtInt(wetE)+' / '+fmtInt(iceE)+' MWh',null,`ice-making included on the ice side · ${ok?'zero':fmtInt(st.sprayHrs)+' '} spray hours`);
+  if(chW3){chW3.destroy();chW3=null;} killChart('cW3');
+  const colDry=c.ghost, colWet=c.water, colIce=c.chiller;
+  chW3=new Chart($('cW3'),{type:'line',data:{labels:HRS8,datasets:[
+    {label:'No means',data:dry,borderColor:colDry,borderWidth:1,pointRadius:0,fill:false,tension:0,order:3},
+    {label:'Adiabatic pads (today)',data:wet,borderColor:colWet,borderWidth:1,pointRadius:0,fill:false,tension:0,order:2},
+    {label:'IceBrick, pads off',data:ice,borderColor:colIce,borderWidth:1,pointRadius:0,fill:false,tension:0,order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,normalized:true,interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:false},zoom:zoomOpts(),tooltip:{...ttBase(),callbacks:{title:ttTitle87,label:x=>` ${x.dataset.label}: ${(+x.raw).toFixed(2)} MW`}}},
+      scales:{x:xMonth(c),y:{grid:{color:c.grid},ticks:{color:c.tick},beginAtZero:true,title:{display:true,text:'MW · mechanical cooling only',color:c.tick}}}}});
+  $('cW3').ondblclick=()=>chW3&&chW3.resetZoom();
+  buildLegend($('w3_legend'),chW3,[{lb:'No means — pads never wetted, no ice',col:colDry,i:0},{lb:'Adiabatic pads on your trigger — '+fmtInt(wConv(b.water))+' '+wUnit()+'/yr',col:colWet,i:1},{lb:'IceBrick instead of the water — '+fmtInt(wConv(st.waterI))+' '+wUnit()+'/yr',col:colIce,i:2}]);
+  $('w3_tag').textContent=`${HUBS[W.hub].name} · ${W.IT} MW IT · FWS ${tA1(p.FWS)} · ${b.yrCal?'calendar '+b.yrCal:'typical year'} · drag to zoom, double-click to reset`;
+  $('w3_note').innerHTML=(w3&&w3.knee&&w3.knee!==st
+      ?`Sized night by night (one night of ice per day) the store would be ${ton(w3.knee.storMaxTh)} ton-h and ${fmtInt(wConv(w3.knee.waterI))} ${wUnit()} of water would remain on the hottest nights, which cannot bank under today's peak. Carrying ice from the cooler nights before — ${w3.mu} nights of storage, the MU${w3.mu} in the run code — is what dries the year; the plant itself stays at ${ton(st.icePlantTh)} RT. `
+      :``)+
+    `Rule of thumb for where this pays: the ice replaces water cheaply where the trigger hours are few and the nights are cool enough to bank under today's peak — dry, high-range climates with warm facility water. Where summer nights stay within a few degrees of the day, the store has nowhere to charge and the plant grows out of proportion.`;
+}
+let chB0=null;
+function drawB0(){
+  const wrap=$('b0_wrap'), tw=$('trig_wrap'); if(!wrap)return;
+  const on=!!(R.dry&&R.p&&R.p.cascade===2);
+  wrap.style.display=on?'':'none'; if(tw)tw.style.display=on?'':'none';
+  if(chB0){chB0.destroy();chB0=null;} killChart('cB0');
+  if(!on||typeof Chart==='undefined')return;
+  const c=C(), d=R.dry, b=R.base, [mn,mx]=bandY();
+  const o0=yearOpts(c,mn,mx,true);
+  const base0=Math.min.apply(null,d.fac);
+  const lb0=o0.plugins.tooltip.callbacks.label;
+  o0.plugins.tooltip.callbacks.label=x=>{ let t=lb0(x); if(x.dataset.label==='Facility demand') t+=` · chillers only ${Math.max(0,x.raw-base0).toFixed(2)} MW`; return t; };
+  o0.scales.y2={type:'linear',position:'right',min:Math.round((mn-base0)*100)/100,max:Math.round((mx-base0)*100)/100,grid:{display:false},ticks:{color:c.tick,callback:v=>v<0?'':String(Math.round(v*10)/10)},title:{display:true,text:'MW — mechanical cooling only',color:c.tick}};
+  o0.scales.y3={position:'right',grid:{display:false},ticks:{color:c.amb},title:{display:true,text:'ambient '+tUnit(),color:c.amb}};
+  const peakDry=new Array(8760).fill(d.pkFac), peakWet=new Array(8760).fill(b.pkFac);
+  chB0=new Chart($('cB0'),{type:'line',data:{labels:HRS8,datasets:[
+    {label:'Peak, no means',data:peakDry,borderColor:c.ghost,backgroundColor:'transparent',borderWidth:1.3,pointRadius:0,fill:false,borderDash:[7,4],tension:0,order:0},
+    {label:'Facility demand',data:d.fac,borderColor:c.chiller,backgroundColor:'transparent',borderWidth:.9,pointRadius:0,fill:false,tension:0,order:1},
+    {label:'Ambient dry-bulb',data:d.amb.map(cvT),borderColor:c.amb,backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,fill:false,tension:0,order:4,yAxisID:'y3',hidden:true},
+    {label:'Wet-bulb',data:d.wb.map(cvT),borderColor:c.wb,backgroundColor:'transparent',borderWidth:1.1,pointRadius:0,fill:false,tension:0,order:4,yAxisID:'y3',hidden:true,borderDash:[4,3]},
+    {label:'Peak today (with the pads)',data:peakWet,borderColor:c.mech,backgroundColor:'transparent',borderWidth:1.3,pointRadius:0,fill:false,borderDash:[7,4],tension:0,order:0}
+  ]},options:o0,plugins:[{id:'nbY3vis0',beforeLayout:ch=>{ch.options.scales.y3.display=ch.isDatasetVisible(2)||ch.isDatasetVisible(3);}}]});
+  $('cB0').ondblclick=resetBoth;
+  buildLegend($('b0_legend'),chB0,[{lb:'Peak with no means — '+d.pkFac.toFixed(2)+' MW',col:c.ghost,i:0,dash:true},
+    {lb:'Peak today with the pads — '+b.pkFac.toFixed(2)+' MW',col:c.mech,i:4,dash:true},
+    {lb:'Facility demand, pads never wetted — the right axis reads the chillers alone',col:c.chiller,i:1},
+    {lb:'Ambient dry-bulb (right axis)',col:c.amb,i:2},{lb:'Wet-bulb (right axis)',col:c.wb,i:3,dash:true}]);
+  $('b0_tag').textContent=`facility demand, 8,760 h · FWS ${tA1(R.p.FWS)} · peak ${d.pkFac.toFixed(2)} MW · the pads would have taken ${(d.pkFac-b.pkFac).toFixed(2)} MW off it`;
+  const s=$('i_trig'), v=$('v_trig'); if(s&&document.activeElement!==s)s.value=FOG_C; if(v)v.textContent=tA1(FOG_C);
+}
+let trigBusy=false;
+function rerunTrigger(tC){
+  if(trigBusy||w100Busy)return; trigBusy=true;
+  FOG_C=tC; W.trig=tC;
+  const hint=$('trig_hint'), old=hint?hint.textContent:'';
+  if(hint)hint.textContent='Re-running the year at the new trigger…';
+  setTimeout(()=>{ try{
+      computeBaseline(); if(typeof computeDesign==='function')computeDesign();
+      if(NEXTOPEN) computeIce();
+      refreshAll(); drawB0(); try{paintRunCode();}catch(e){} try{paintRunMatrix();}catch(e){}
+    }catch(e){console.error(e);} finally{ if(hint)hint.textContent=old; trigBusy=false; setTimeout(()=>{try{w100Search();}catch(e){}},200); } },30);
+}
 function drawB1(){
   if(typeof Chart==='undefined'||!R.st)return;
   if(chB1){chB1.destroy();chB1=null;} killChart('cB1');
@@ -5491,15 +5746,16 @@ function refreshAll(){
   try{
     syncResWater();
     paintBaseline(); drawYear(); paintDay(); drawDay();
-    if(NEXTOPEN){paintIce(); drawB1(); drawB2(); drawND(); drawMon(); drawCV(); drawFD(); try{adPaint();}catch(e){console.error(e);}}
+    if(NEXTOPEN){paintIce(); drawB0(); drawB1(); drawB2(); drawND(); drawMon(); drawCV(); drawFD(); try{adPaint();}catch(e){console.error(e);} try{drawW3();}catch(e){console.error(e);}}
   }catch(e){}
 }
 function restart(){
   STAGE='wiz'; NEXTOPEN=false;
   FD_OPEN=false; const fa=$('fd_ask'); if(fa)fa.style.display=''; const fw=$('fd_wrap'); if(fw)fw.style.display='none';
   CV_OPEN=false; const ca=$('cv_ask'); if(ca)ca.style.display=''; const cw=$('cv_wrap'); if(cw)cw.style.display='none';
-  [chYear,chDay,chB1,chB2,chND,chMon,chCV,chFD].forEach(c=>{try{c&&c.destroy();}catch(e){}});
-  chYear=chDay=chB1=chB2=chND=chMon=chCV=chFD=null;
+  [chYear,chDay,chB0,chB1,chB2,chND,chMon,chCV,chFD,chW3].forEach(c=>{try{c&&c.destroy();}catch(e){}});
+  chYear=chDay=chB0=chB1=chB2=chND=chMon=chCV=chFD=chW3=null;
+  FOG_C=FOG_C0; W.trig=null;
   delete R.base; delete R.dd; delete R.st; delete R.ddi;
   hideEl('v_run'); hideEl('v_res'); hideEl('nextlevel'); showEl('v_wiz'); hideEl('restart'); hideEl('act_pdf');
   RUN_NAME='';
@@ -5961,7 +6217,7 @@ async function buildPDF(){
     rule();
     kpis(D.delt);
 
-    if(D.nlExplain){ newPage(); h1('Why this works'); para(D.nlExplain,10.4);
+    if(false&&D.nlExplain){ newPage(); h1('Why this works'); para(D.nlExplain,10.4);
       if(D.benefits&&D.benefits.length){ h2('What IceBrick buys this data center');
         D.benefits.forEach(x=>para('•  '+x,10)); }
       if(D.finOther&&D.finOther.length){ rule();
@@ -6244,11 +6500,12 @@ function runCode(){
   ].concat((W.peMode==='grid'&&W.gc>0)?['GC'+n1(W.gc)]:[])
    .concat((W.pePct!==80||(W.peMode==='grid'&&W.gc>0))?['PP'+n0(W.pePct)]:[])
    .concat((W.hdr>0&&W.hdT!==90)?['HT'+n0(W.hdT)]:[])
-   .concat((W.cascade===2&&W.wmode==='pw')?['PW']:[])
+   .concat((W.cascade===2&&W.wmode==='pw')?['PW']:[]).concat((W.cascade===2&&W.wmode==='water')?['WO']:[])
    .concat((W.cascade===2&&W.wmode==='night')?['NF'+(Math.round((W.nfCap!=null?W.nfCap:NF_CAP_DEFAULT)*100)/100)]:[])
    .concat((W.cascade===2&&W.pads&&W.pads!=='both')?['PD'+(W.pads==='cond'?'C':'D')]:[])
    .concat(W.mode==='s2p'?['S2P'+W.s2start+'X'+W.s2dur+(W.s2grid||S2P.SITE_GRID[W.hub]||'PJM')]:[])
    .concat(W.nfc?['NFC'+(W.nfb?'B':'')]:[]).concat((W.cascade===2&&(W.pkw||0)>0)?['PKW'+Math.round(W.pkw)]:[])
+   .concat((W.cascade===2&&W.trig!=null&&Math.abs(W.trig-FOG_C0)>0.05)?['TR'+(Math.round(W.trig*10)/10)]:[])
    .join('-');
 }
 
@@ -6821,7 +7078,7 @@ mountNbAnim('animA',1,'animA_st');
 mountNbAnim('animB',2,'animB_st');
 
 applyHall(); syncWizLabels(); recap(); dots(); goStep(0); applyTheme();
-document.querySelectorAll('.hver').forEach(e=>e.textContent='(v.'+VER+')');
+document.querySelectorAll('.hver').forEach(e=>e.textContent='(v.'+VER_LABEL+')');
   if(WXR){const f=document.getElementById('foot_note');
     if(f)f.innerHTML='Screening-grade 8,760-hour model \u00b7 measured weather: calendar 2025 hourly + 1976\u20132025 design days (ERA5, Open-Meteo)<br>'+
       'Chiller performance: YORK YVFA0309EVK46AAVBXO, Design Conditions Datasheet E.21.0.25809.0-D.89.0034 (YW21.00b) \u2014 used for every compressor hour in this study';}
