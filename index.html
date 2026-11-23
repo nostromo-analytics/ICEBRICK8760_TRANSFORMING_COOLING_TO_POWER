@@ -1859,7 +1859,7 @@ function copAt(o,FWS,p,x,hd,spray){
 //  which is a materially better place on the part-load curve than 100%, and this tool
 //  prices every hour from there instead of pretending the machines are pinned.
 const PLANT_RATIO=1.2;
-const VER='224'; const VER_LABEL='2.20';   // v2.01: the run code keeps the integer build (201); the page shows 2.01
+const VER='226'; const VER_LABEL=VER[0]+'.'+VER.slice(1);   // v2.01: the run code keeps the integer build (201); the page shows 2.01
 // v144 NIGHT-FOGGING MODE. Third dispatch goal on the adiabatic cascade: the night wet free-cooling
 // stage runs to its full depth and the only water rule is a cap on the change in SITE WUE - added
 // water over total annual IT kWh - set by the operator. Default cap below.
@@ -7252,7 +7252,7 @@ mountNbAnim('animA',1,'animA_st');
 mountNbAnim('animB',2,'animB_st');
 
 applyHall(); syncWizLabels(); recap(); dots(); goStep(0); applyTheme();
-document.querySelectorAll('.hver').forEach(e=>e.textContent='(v.'+VER_LABEL+')');
+document.querySelectorAll('.hver').forEach(e=>e.textContent='V'+VER_LABEL);
   if(WXR){const f=document.getElementById('foot_note');
     if(f)f.innerHTML='Screening-grade 8,760-hour model \u00b7 measured weather: calendar 2025 hourly + 1976\u20132025 design days (ERA5, Open-Meteo)<br>'+
       'Chiller performance: YORK YVFA0309EVK46AAVBXO, Design Conditions Datasheet E.21.0.25809.0-D.89.0034 (YW21.00b) \u2014 used for every compressor hour in this study';}
